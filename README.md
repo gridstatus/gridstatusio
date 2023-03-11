@@ -12,7 +12,7 @@ pip install gridstatusio
 
 
 ## Usage
-
+w
 ### Set API Key
 To use the library, first set your API key:
 
@@ -48,7 +48,6 @@ df = gs.get_dataset(
     dataset="isone/fuel_mix_clean",
     start="2023-01-01",
     end="2023-01-05",
-    verbose=True,
 )
 ```
 
