@@ -1,0 +1,17 @@
+name: Lint Check
+on: [pull_request]
+jobs:
+  lint_check:
+    name: 3.11 lint check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install package with dev deps
+        run: |
+          python -m pip install -e ".[dev]"
+      - name: Run lint check
+        run: make lint
