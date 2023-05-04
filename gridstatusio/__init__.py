@@ -1,3 +1,3 @@
 from gridstatusio.version import __version__
 
-from gridstatusio.api import *
+from gridstatusio.gs_client import GridStatusClient

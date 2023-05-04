@@ -1,7 +1,25 @@
+import os
+
 import pandas as pd
-import pytest
 
 import gridstatusio as gs
+
+client = gs.GridStatusClient(api_key=os.getenv("GRIDSTATUS_API_KEY_TEST"))
+
+
+def test_list_datasets():
+    datasets = client.list_datasets(return_list=True)
+    assert isinstance(datasets, list), "Expected a list of datasets"
+    assert len(datasets) > 0, "Expected at least one dataset"
+
+
+def test_list_datasets_filter():
+    filter_term = "fuel_mix"
+    min_results = 7
+    datasets = client.list_datasets(filter_term=filter_term, return_list=True)
+    assert (
+        len(datasets) >= min_results
+    ), f"Expected at least {min_results} results with filter term '{filter_term}'"
 
 
 def _check_dataframe(df):
@@ -9,55 +27,24 @@ def _check_dataframe(df):
     assert len(df) > 0
 
 
-def test_api_key_must_be_set():
-    with pytest.raises(AttributeError):
-        gs.get_api_key()
-
-
 def test_set_api_works():
-    gs.api_key = "test"
-    assert gs.get_api_key() == "test"
+    client = gs.GridStatusClient(api_key="test")
+    assert client.api_key == "test"
 
 
 # todo test require_only_kwargs
-
-
-def test_get_dataset_date():
-    gs.api_key = "TQfPZ3zOQ65Z7AbI1jMsMaLJvjcwAuyG85WjKNJI"
-
-    df = gs.get_dataset(
-        dataset="isone/fuel_mix_clean",
-        date="2023-01-01",
-    )
-
-    _check_dataframe(df)
-
-
 def test_get_dataset_date_range():
-    gs.api_key = "TQfPZ3zOQ65Z7AbI1jMsMaLJvjcwAuyG85WjKNJI"
-
-    df = gs.get_dataset(
-        dataset="isone/fuel_mix_clean",
-        start="2023-01-01",
-        end="2023-01-05",
+    start = "2023-01-01"
+    end = "2023-01-05"
+    df = client.get_dataset(
+        dataset="isone_fuel_mix",
+        start=start,
+        end=end,
         verbose=True,
     )
 
     _check_dataframe(df)
 
-
-def test_list_datasets():
-    gs.api_key = "TQfPZ3zOQ65Z7AbI1jMsMaLJvjcwAuyG85WjKNJI"
-
-    df = gs.list_datasets()
-
-    cols = [
-        "dataset",
-        "earliest",
-        "latest",
-        "num_missing",
-        "earliest_no_missing",
-        "missing",
-    ]
-
-    assert df.columns.tolist() == cols
+    # make sure min of interval_start_utc equals start
+    assert df["interval_start_utc"].min().strftime("%Y-%m-%d") == start
+    assert df["interval_end_utc"].max().strftime("%Y-%m-%d") == end
