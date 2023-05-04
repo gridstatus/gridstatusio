@@ -12,7 +12,7 @@ pip install gridstatusio
 
 ## Getting Started
 
-Check out this example notebook: [Getting Start](/Examples/Getting%20Started.ipynb)
+Check out this example notebook: [Getting Started](/Examples/Getting%20Started.ipynb)
 
 ## Open Source
 
