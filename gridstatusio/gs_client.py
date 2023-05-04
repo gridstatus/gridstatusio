@@ -23,6 +23,8 @@ class GridStatusClient:
         """
 
         if api_key is None:
+            import os
+
             api_key = os.environ.get("GRIDSTATUS_API_KEY")
 
         if api_key is None:
