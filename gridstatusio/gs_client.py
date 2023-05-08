@@ -11,7 +11,7 @@ from gridstatusio import __version__
 
 
 class GridStatusClient:
-    def __init__(self, api_key=None, host="https://api.gridstatus.io"):
+    def __init__(self, api_key=None, host="https://api.gridstatus.io/v1"):
         """Create a GridStatus.io API client
 
         Parameters:
