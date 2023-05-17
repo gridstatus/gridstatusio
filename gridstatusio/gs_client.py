@@ -138,8 +138,8 @@ class GridStatusClient:
     def get_dataset(
         self,
         dataset,
-        start,
-        end,
+        start=None,
+        end=None,
         filter_column=None,
         filter_value=None,
         limit=10000,
@@ -150,8 +150,10 @@ class GridStatusClient:
 
         Parameters:
             dataset (str): The name of the dataset to fetch
-            start (str): The start time of the data to fetch
-            end (str): The end time of the data to fetch
+            start (str): The start time of the data to fetch. If not provided,
+                defaults to the earliest available time for the dataset.
+            end (str): The end time of the data to fetch. If not provided,
+                defaults to the latest available time for the dataset.
             filter_column (str): The column to filter on
             filter_value (str): The value to filter on
             limit (int): The maximum number of rows to fetch at time.
@@ -164,8 +166,12 @@ class GridStatusClient:
         """
         if tz is None:
             tz = "UTC"
-        start = gridstatus.utils._handle_date(start, tz)
-        end = gridstatus.utils._handle_date(end, tz)
+
+        if start is not None:
+            start = gridstatus.utils._handle_date(start, tz)
+
+        if end is not None:
+            end = gridstatus.utils._handle_date(end, tz)
 
         # handle pagination
         page = 1
