@@ -10,6 +10,13 @@ You can install GridStatus.io Hosted API by running the following command in you
 pip install gridstatusio
 ```
 
+Upgrade using the following command
+
+```
+python -m pip install --upgrade gridstatusio
+```
+
+
 ## Getting Started
 
 Check out this example notebook: [Getting Started](/Examples/Getting%20Started.ipynb)
