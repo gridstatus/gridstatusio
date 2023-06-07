@@ -4,7 +4,7 @@ Python client for accessing the [GridStatus.io Hosted API](https://www.gridstatu
 
 ## Installation
 
-You can install GridStatus.io Hosted API by running the following command in your terminal or command prompt:
+gridstatusio supports python 3.8+. Install with pip:
 
 ```bash
 pip install gridstatusio
