@@ -227,14 +227,19 @@ class GridStatusClient:
         )
 
         # convert to datetime for any columns that end in _utc
+        # or are of type object
         for col in df.columns:
-            if col.endswith("_utc"):
-                df[col] = pd.to_datetime(df[col], utc=True)
+
+            if df[col].dtype == "object" or col.endswith("_utc"):
+                try:
+                    df[col] = pd.to_datetime(df[col], utc=True)
+                except ValueError:
+                    pass
 
                 if tz != "UTC":
                     df[col] = df[col].dt.tz_convert(tz)
                     # rename with _utc suffix
-                    df = df.rename(columns={col: col[:-4] + "_local"})
+                    df = df.rename(columns={col: col.replace("_utc", "") + "_local"})
 
         return df
 
