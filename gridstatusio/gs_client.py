@@ -216,7 +216,7 @@ class GridStatusClient:
 
         print()  # Add a newline for cleaner output
 
-        df = pd.concat(dfs)
+        df = pd.concat(dfs).reset_index(drop=True)
 
         # Print the additional information
         cprint(f"\nTotal number of rows: {len(df)}", "cyan")
