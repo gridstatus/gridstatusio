@@ -25,6 +25,7 @@ def test_list_datasets_filter():
 def _check_dataframe(df):
     assert isinstance(df, pd.DataFrame)
     assert len(df) > 0
+    assert df.index.is_unique
 
 
 def test_set_api_works():
@@ -48,3 +49,17 @@ def test_get_dataset_date_range():
     # make sure min of interval_start_utc equals start
     assert df["interval_start_utc"].min().strftime("%Y-%m-%d") == start
     assert df["interval_end_utc"].max().strftime("%Y-%m-%d") == end
+
+
+def test_index_unique_multiple_pages():
+    start = "2023-01-01"
+    end = "2023-01-02"
+    df = client.get_dataset(
+        dataset="isone_fuel_mix",
+        start=start,
+        end=end,
+        verbose=True,
+        limit=100,
+    )
+
+    _check_dataframe(df)
