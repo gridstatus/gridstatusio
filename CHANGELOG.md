@@ -1,6 +1,6 @@
 # Changelog
 
-## vNext
+## v0.3.0 - July 21, 2023
 
 ### Enhancements
 
