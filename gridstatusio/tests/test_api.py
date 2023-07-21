@@ -4,10 +4,7 @@ import pandas as pd
 
 import gridstatusio as gs
 
-client = gs.GridStatusClient(
-    api_key=os.getenv("GRIDSTATUS_API_KEY_TEST"),
-    host="http://localhost:8000/v1",
-)
+client = gs.GridStatusClient(api_key=os.getenv("GRIDSTATUS_API_KEY_TEST"))
 
 
 def test_uses_columns():
