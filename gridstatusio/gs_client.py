@@ -143,6 +143,7 @@ class GridStatusClient:
         columns=None,
         filter_column=None,
         filter_value=None,
+        filter_operator="=",
         limit=10000,
         max_rows=None,
         tz=None,
@@ -159,7 +160,11 @@ class GridStatusClient:
             columns (list): The columns to fetch. If not provided,
                 defaults to all available columns.
             filter_column (str): The column to filter on
-            filter_value (str): The value to filter on
+            filter_value (str): The value to filter on. If filter operator is "in",
+                this should be a list of values.
+            filter_operator (str): The operator to use for the filter.
+                Defaults to "=". Possible values are "=",
+                "!=", ">", "<", ">=", "<=", "in".
             limit (int): The maximum number of rows to fetch at time.
                 Defaults to 10000.
             max_rows (int): The maximum number of rows to fetch.
@@ -198,8 +203,12 @@ class GridStatusClient:
             }
             url = f"{self.host}/datasets/{dataset}/query/"
             if filter_column is not None:
+                if isinstance(filter_value, list) and filter_operator == "in":
+                    filter_value = ",".join(filter_value)
+
                 params["filter_column"] = filter_column
                 params["filter_value"] = filter_value
+                params["filter_operator"] = filter_operator
 
             if columns is not None:
                 params["columns"] = ",".join(columns)
@@ -242,7 +251,12 @@ class GridStatusClient:
         for col in df.columns:
             if df[col].dtype == "object" or col.endswith("_utc"):
                 try:
-                    df[col] = pd.to_datetime(df[col], utc=True)
+                    df[col] = pd.to_datetime(
+                        df[col],
+                        format="%Y-%m-%d %H:%M:%S%z",
+                        utc=True,
+                    )
+
                     if tz != "UTC":
                         df[col] = df[col].dt.tz_convert(tz)
                         # rename with _utc suffix

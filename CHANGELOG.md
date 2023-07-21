@@ -4,6 +4,7 @@
 
 ### Enhancements
 
+- Specifiy a filter operator when using filtering. Supports "=", "!=", ">", "<", ">=", "<=", "in".
 - Specify subset of columns to query
 
 ## v0.2.3 - July 17th, 2023
