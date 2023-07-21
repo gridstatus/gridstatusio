@@ -4,7 +4,10 @@ import pandas as pd
 
 import gridstatusio as gs
 
-client = gs.GridStatusClient(api_key=os.getenv("GRIDSTATUS_API_KEY_TEST"))
+client = gs.GridStatusClient(
+    api_key=os.getenv("GRIDSTATUS_API_KEY_TEST"),
+    host="http://localhost:8000/v1",
+)
 
 
 def test_uses_columns():
@@ -82,3 +85,110 @@ def test_index_unique_multiple_pages():
     )
 
     _check_dataframe(df)
+
+
+def test_filter_operator():
+    dataset = "caiso_curtailment"
+    max_rows = 100
+    category_column = "curtailment_type"
+    category_value = "Economic"
+    category_values = ["Economic", "SelfSchCut", "ExDispatch"]
+    numeric_column = "curtailment_mw"
+    numeric_value = 100
+
+    df = client.get_dataset(
+        dataset=dataset,
+        filter_column=category_column,
+        filter_value=category_value,
+        filter_operator="=",
+        max_rows=max_rows,
+        verbose=True,
+    )
+    _check_dataframe(df)
+    assert df["curtailment_type"].unique() == [category_value]
+
+    df = client.get_dataset(
+        dataset=dataset,
+        filter_column=category_column,
+        filter_value=category_value,
+        filter_operator="!=",
+        max_rows=max_rows,
+        verbose=True,
+    )
+    _check_dataframe(df)
+    assert set(df["curtailment_type"].unique()) == set(category_values) - {
+        category_value,
+    }
+
+    df = client.get_dataset(
+        dataset=dataset,
+        filter_column=category_column,
+        filter_value=category_values,
+        filter_operator="in",
+        max_rows=max_rows,
+        verbose=True,
+    )
+    _check_dataframe(df)
+    assert set(df["curtailment_type"].unique()) == set(category_values)
+
+    # test numeric operators = ["<", "<=", ">", ">=", "="]
+
+    df = client.get_dataset(
+        dataset=dataset,
+        filter_column=numeric_column,
+        filter_value=numeric_value,
+        filter_operator="<",
+        max_rows=max_rows,
+        verbose=True,
+    )
+
+    _check_dataframe(df)
+    assert df["curtailment_mw"].max() < numeric_value
+
+    df = client.get_dataset(
+        dataset=dataset,
+        filter_column=numeric_column,
+        filter_value=numeric_value,
+        filter_operator="<=",
+        max_rows=max_rows,
+        verbose=True,
+    )
+
+    _check_dataframe(df)
+    assert df["curtailment_mw"].max() <= numeric_value
+
+    df = client.get_dataset(
+        dataset=dataset,
+        filter_column=numeric_column,
+        filter_value=numeric_value,
+        filter_operator=">",
+        max_rows=max_rows,
+        verbose=True,
+    )
+
+    _check_dataframe(df)
+    assert df["curtailment_mw"].min() > numeric_value
+
+    df = client.get_dataset(
+        dataset=dataset,
+        filter_column=numeric_column,
+        filter_value=numeric_value,
+        filter_operator=">=",
+        max_rows=max_rows,
+        verbose=True,
+    )
+
+    _check_dataframe(df)
+    assert df["curtailment_mw"].min() >= numeric_value
+
+    df = client.get_dataset(
+        dataset=dataset,
+        filter_column=numeric_column,
+        filter_value=numeric_value,
+        filter_operator="=",
+        max_rows=max_rows,
+        verbose=True,
+    )
+
+    _check_dataframe(df)
+    assert df["curtailment_mw"].unique() == [numeric_value]
