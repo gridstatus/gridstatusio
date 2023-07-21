@@ -44,6 +44,17 @@ def test_list_datasets_filter():
 def _check_dataframe(df):
     assert isinstance(df, pd.DataFrame)
     assert len(df) > 0
+
+    # possible datetime columns
+    datetime_columns = [
+        "interval_start_utc",
+        "interval_end_utc",
+        "interval_start_local",
+        "interval_end_local",
+    ]
+    for c in datetime_columns:
+        if c in df.columns:
+            assert pd.api.types.is_datetime64_any_dtype(df[c])
     assert df.index.is_unique
 
 

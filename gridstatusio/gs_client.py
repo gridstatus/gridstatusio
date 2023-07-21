@@ -251,7 +251,12 @@ class GridStatusClient:
         for col in df.columns:
             if df[col].dtype == "object" or col.endswith("_utc"):
                 try:
-                    df[col] = pd.to_datetime(df[col], utc=True)
+                    df[col] = pd.to_datetime(
+                        df[col],
+                        format="%Y-%m-%d %H:%M:%S%z",
+                        utc=True,
+                    )
+
                     if tz != "UTC":
                         df[col] = df[col].dt.tz_convert(tz)
                         # rename with _utc suffix
