@@ -2,7 +2,7 @@
 
 ## vNext
 
-# Enhancements
+### Enhancements
 
 - Specify subset of columns to query
 
