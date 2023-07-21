@@ -7,6 +7,25 @@ import gridstatusio as gs
 client = gs.GridStatusClient(api_key=os.getenv("GRIDSTATUS_API_KEY_TEST"))
 
 
+def test_uses_columns():
+    dataset = "ercot_sced_gen_resource_60_day"
+    columns = ["interval_start_utc", "interval_end_utc", "resource_name"]
+    max_rows = 100
+    df = client.get_dataset(
+        dataset=dataset,
+        columns=columns,
+        verbose=True,
+        max_rows=max_rows,
+    )
+    assert set(columns).issubset(df.columns), "Expected only the specified columns"
+    assert len(df) == max_rows, "Expected max_rows to be respected"
+
+    # no columns specified
+    ncols = 28
+    df = client.get_dataset(dataset=dataset, verbose=True, max_rows=max_rows)
+    assert df.shape == (max_rows, ncols), "Expected all columns"
+
+
 def test_list_datasets():
     datasets = client.list_datasets(return_list=True)
     assert isinstance(datasets, list), "Expected a list of datasets"

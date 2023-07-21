@@ -140,9 +140,11 @@ class GridStatusClient:
         dataset,
         start=None,
         end=None,
+        columns=None,
         filter_column=None,
         filter_value=None,
         limit=10000,
+        max_rows=None,
         tz=None,
         verbose=False,
     ):
@@ -154,9 +156,14 @@ class GridStatusClient:
                 defaults to the earliest available time for the dataset.
             end (str): The end time of the data to fetch. If not provided,
                 defaults to the latest available time for the dataset.
+            columns (list): The columns to fetch. If not provided,
+                defaults to all available columns.
             filter_column (str): The column to filter on
             filter_value (str): The value to filter on
             limit (int): The maximum number of rows to fetch at time.
+                Defaults to 10000.
+            max_rows (int): The maximum number of rows to fetch.
+                Defaults to None, which fetches all rows that match the request.
             tz (str): The timezone to convert utc timestamps to. Defaults to UTC.
             verbose (bool): If set to True, prints out the number
                 of rows fetched and the time taken to fetch them.
@@ -187,11 +194,15 @@ class GridStatusClient:
                 "limit": limit,
                 "return_format": "csv",
                 "page": page,
+                "max_rows": max_rows,
             }
             url = f"{self.host}/datasets/{dataset}/query/"
             if filter_column is not None:
                 params["filter_column"] = filter_column
                 params["filter_value"] = filter_value
+
+            if columns is not None:
+                params["columns"] = ",".join(columns)
 
             response = self.get(url, params=params, verbose=verbose)
 
@@ -229,17 +240,17 @@ class GridStatusClient:
         # convert to datetime for any columns that end in _utc
         # or are of type object
         for col in df.columns:
-
             if df[col].dtype == "object" or col.endswith("_utc"):
                 try:
                     df[col] = pd.to_datetime(df[col], utc=True)
+                    if tz != "UTC":
+                        df[col] = df[col].dt.tz_convert(tz)
+                        # rename with _utc suffix
+                        df = df.rename(
+                            columns={col: col.replace("_utc", "") + "_local"},
+                        )
                 except ValueError:
                     pass
-
-                if tz != "UTC":
-                    df[col] = df[col].dt.tz_convert(tz)
-                    # rename with _utc suffix
-                    df = df.rename(columns={col: col.replace("_utc", "") + "_local"})
 
         return df
 
