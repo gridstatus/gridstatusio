@@ -1,5 +1,11 @@
 # Changelog
 
+## vNext
+
+### Enhancements
+
+- Revised the functionality of the verbose flag. Now, when it's set to False, no output is generated. If set to True or "info", it provides a moderate level of information. For the most detailed output, set it to "debug".
+
 ## v0.3.0 - July 21, 2023
 
 ### Enhancements
