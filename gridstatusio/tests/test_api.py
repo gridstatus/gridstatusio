@@ -200,3 +200,61 @@ def test_filter_operator():
 
     _check_dataframe(df)
     assert df["curtailment_mw"].unique() == [numeric_value]
+
+
+def test_get_dataset_verbose(capsys):
+    # make sure nothing print to stdout
+    client.get_dataset(
+        dataset="isone_fuel_mix",
+        start="2023-01-01",
+        end="2023-01-05",
+        max_rows=1,
+        verbose=False,
+    )
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+
+    # test debug
+    client.get_dataset(
+        dataset="isone_fuel_mix",
+        start="2023-01-01",
+        end="2023-01-05",
+        max_rows=1,
+        verbose="debug",
+    )
+
+    captured = capsys.readouterr()
+    assert captured.out != ""
+    # make sure the params are printed
+    assert "Done in" in captured.out
+    assert "Params: {" in captured.out
+
+    # make sure something prints to stdout
+    # but not the params
+    client.get_dataset(
+        dataset="isone_fuel_mix",
+        start="2023-01-01",
+        end="2023-01-05",
+        max_rows=1,
+        verbose=True,
+    )
+
+    captured = capsys.readouterr()
+    assert captured.out != ""
+    assert "Done in" in captured.out
+    assert "Params: {" not in captured.out
+
+    # same as verbose=True
+    client.get_dataset(
+        dataset="isone_fuel_mix",
+        start="2023-01-01",
+        end="2023-01-05",
+        max_rows=1,
+        verbose="info",
+    )
+
+    captured = capsys.readouterr()
+    assert captured.out != ""
+    assert "Done in" in captured.out
+    assert "Params: {" not in captured.out

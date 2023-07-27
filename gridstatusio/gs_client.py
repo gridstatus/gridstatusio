@@ -5,9 +5,21 @@ import gridstatus
 import pandas as pd
 import requests
 from tabulate import tabulate
-from termcolor import colored, cprint
+from termcolor import colored
 
 from gridstatusio import __version__
+
+
+def log(msg, verbose, level="info", end="\n"):
+    """Print a message if verbose matches the level"""
+    if verbose is True:
+        verbose = "info"
+
+    # if verbose is debug, print everything
+    if verbose == "debug":
+        print(msg, end=end)
+    elif verbose == "info" and level == "info":
+        print(msg, end=end)
 
 
 class GridStatusClient:
@@ -48,9 +60,8 @@ class GridStatusClient:
             "x-client-version": __version__,
         }
 
-        if verbose:
-            print(f"GET {url}")
-            print(f"Params: {params}")
+        log(f"\nGET {url}", verbose=verbose, level="debug")
+        log(f"Params: {params}", verbose=verbose, level="debug")
         response = requests.get(url, params=params, headers=headers)
 
         if response.status_code != 200:
@@ -129,8 +140,11 @@ class GridStatusClient:
                     )
                     dataset_table.append(["More Info", more_info_url])
 
-                    print(tabulate(dataset_table, headers=headers, tablefmt="pretty"))
-                    print("\n")
+                    log(
+                        tabulate(dataset_table, headers=headers, tablefmt="pretty"),
+                        True,
+                    )
+                    log("\n", True)
 
         if return_list:
             return matched_datasets
@@ -147,7 +161,7 @@ class GridStatusClient:
         limit=10000,
         max_rows=None,
         tz=None,
-        verbose=False,
+        verbose=True,
     ):
         """Get a dataset from GridStatus.io API
 
@@ -170,8 +184,9 @@ class GridStatusClient:
             max_rows (int): The maximum number of rows to fetch.
                 Defaults to None, which fetches all rows that match the request.
             tz (str): The timezone to convert utc timestamps to. Defaults to UTC.
-            verbose (bool): If set to True, prints out the number
-                of rows fetched and the time taken to fetch them.
+            verbose (bool): If set to True or "info", prints additional information.
+                If set to "debug", prints more additional debug information. If
+                set to False, no additional information is printed. Defaults to True.
 
         Returns:
             pd.DataFrame: The dataset as a pandas dataframe
@@ -213,6 +228,9 @@ class GridStatusClient:
             if columns is not None:
                 params["columns"] = ",".join(columns)
 
+            # Log the fetching message
+            log(f"Fetching Page {page}...", verbose, end="")
+
             response = self.get(url, params=params, verbose=verbose)
 
             df = pd.read_csv(io.StringIO(response.text))
@@ -223,27 +241,35 @@ class GridStatusClient:
             total_time += response_time
             avg_time_per_page = total_time / page
 
-            print(
-                f"\rFetching page {page}: Time for last page: \
-                    {round(response_time, 2)} seconds | "
-                f"Average time per page: {round(avg_time_per_page, 2)} seconds",
-                end="",
-            )
+            # Update the fetching message with the done message
+            if page == 1:
+                log(
+                    f"Done in {round(response_time, 2)} seconds. ",
+                    verbose,
+                )
+
+            else:
+                log(
+                    f"Done in {round(response_time, 2)} seconds. "
+                    f"Total time: {round(total_time, 2)}s. "
+                    f"Avg per page: {round(avg_time_per_page, 2)}s",
+                    verbose,
+                )
+
             page += 1
+
             # time.sleep(
             #     0.1
             # )  # Add a small delay to ensure the output is updated correctly
 
-        print()  # Add a newline for cleaner output
+        log("", verbose=verbose)  # Add a newline for cleaner output
 
         df = pd.concat(dfs).reset_index(drop=True)
 
         # Print the additional information
-        cprint(f"\nTotal number of rows: {len(df)}", "cyan")
-        cprint(f"Total Time: {round(total_time, 2)} seconds", "cyan")
-        cprint(
-            f"Average time per page: {round(total_time / (page - 1), 2)} seconds",
-            "cyan",
+        log(
+            f"Total number of rows: {len(df)}",
+            verbose=verbose,
         )
 
         # convert to datetime for any columns that end in _utc
