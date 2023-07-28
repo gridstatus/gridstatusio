@@ -233,7 +233,7 @@ class GridStatusClient:
 
             response = self.get(url, params=params, verbose=verbose)
 
-            df = pd.read_csv(io.StringIO(response.text))
+            df = pd.read_csv(io.StringIO(response.text), low_memory=False)
             dfs.append(df)
 
             has_next_page = response.headers["x-has-next-page"] == "true"

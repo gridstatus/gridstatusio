@@ -1,5 +1,11 @@
 # Changelog
 
+## vNext
+
+### Bug Fixes
+
+- Fix mixed dtype warning
+
 ## v0.3.1 - July 27, 2023
 
 ### Enhancements
