@@ -2,6 +2,10 @@
 
 ## vNext
 
+### Enhancements
+
+- Improve dataset download times by switching to json return format from API
+
 ### Bug Fixes
 
 - Fix mixed dtype warning

@@ -23,7 +23,12 @@ def log(msg, verbose, level="info", end="\n"):
 
 
 class GridStatusClient:
-    def __init__(self, api_key=None, host="https://api.gridstatus.io/v1"):
+    def __init__(
+        self,
+        api_key=None,
+        host="https://api.gridstatus.io/v1",
+        request_format="json",
+    ):
         """Create a GridStatus.io API client
 
         Parameters:
@@ -32,6 +37,9 @@ class GridStatusClient:
 
             host (str): The host to use for the API.
                 Defaults to https://api.gridstatus.io
+
+            request_format (str): The format to use for requests. Options are "json"
+                or "csv". Defaults to "json".
         """
 
         if api_key is None:
@@ -48,17 +56,35 @@ class GridStatusClient:
 
         self.api_key = api_key
         self.host = host
+        self.request_format = request_format
+
+        assert self.request_format in [
+            "json",
+            "csv",
+        ], "request_format must be 'json' or 'csv'"
 
     def __repr__(self) -> str:
         return f"GridStatusClient(host={self.host})"
 
     def get(self, url, params=None, verbose=False):
+        if params is None:
+            params = {}
+
         headers = {
             "x-api-key": self.api_key,
             # set client and version
             "x-client": "gridstatusio-python",
             "x-client-version": __version__,
         }
+
+        # note
+        # parameter name different for API
+        # than for python client
+        if "return_format" not in params:
+            params["return_format"] = self.request_format
+
+            if self.request_format == "json":
+                params["json_schema"] = "array-of-arrays"
 
         log(f"\nGET {url}", verbose=verbose, level="debug")
         log(f"Params: {params}", verbose=verbose, level="debug")
@@ -67,7 +93,15 @@ class GridStatusClient:
         if response.status_code != 200:
             raise Exception(f"Error {response.status_code}: {response.text}")
 
-        return response
+        if self.request_format == "json":
+            data = response.json()
+            df = pd.DataFrame(data["data"][1:], columns=data["data"][0])
+        elif self.request_format == "csv":
+            df = pd.read_csv(io.StringIO(response.text), low_memory=False)
+
+        has_next_page = response.headers["x-has-next-page"] == "true"
+
+        return df, has_next_page
 
     def list_datasets(self, filter_term=None, return_list=False):
         """List available datasets from the API,
@@ -85,13 +119,11 @@ class GridStatusClient:
         """
         url = f"{self.host}/datasets/"
 
-        response = self.get(url)
-
-        data = response.json()
+        df, has_next_page = self.get(url)
 
         matched_datasets = []
 
-        for dataset in data["data"]:
+        for dataset in df.to_dict("records"):
             dataset_description = dataset.get("description", "")
             if dataset_description is None:
                 dataset_description = ""
@@ -212,7 +244,6 @@ class GridStatusClient:
                 "start_time": start,
                 "end_time": end,
                 "limit": limit,
-                "return_format": "csv",
                 "page": page,
                 "max_rows": max_rows,
             }
@@ -231,12 +262,10 @@ class GridStatusClient:
             # Log the fetching message
             log(f"Fetching Page {page}...", verbose, end="")
 
-            response = self.get(url, params=params, verbose=verbose)
+            df, has_next_page = self.get(url, params=params, verbose=verbose)
 
-            df = pd.read_csv(io.StringIO(response.text), low_memory=False)
             dfs.append(df)
 
-            has_next_page = response.headers["x-has-next-page"] == "true"
             response_time = time.time() - start_time
             total_time += response_time
             avg_time_per_page = total_time / page
@@ -279,7 +308,7 @@ class GridStatusClient:
                 try:
                     df[col] = pd.to_datetime(
                         df[col],
-                        format="%Y-%m-%d %H:%M:%S%z",
+                        format="ISO8601",
                         utc=True,
                     )
 
