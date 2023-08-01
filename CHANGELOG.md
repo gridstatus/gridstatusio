@@ -1,5 +1,11 @@
 # Changelog
 
+## vNext
+
+### Examples
+
+- Add stacked net load visualization example notebook
+
 ## v0.4.0 - July 31, 2023
 
 ### Enhancements

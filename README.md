@@ -16,10 +16,14 @@ Upgrade using the following command
 python -m pip install --upgrade gridstatusio
 ```
 
-
 ## Getting Started
 
 Check out this example notebook: [Getting Started](/Examples/Getting%20Started.ipynb)
+
+Other Examples:
+
+- [Stacked Net Load Visualization](/Examples/Stacked%20Net%20Load%20Visualization.ipynb)
+- [CAISO April Net Load Analysis](/Examples/CAISO%20April%20Net%20Load.ipynb)
 
 ## Open Source
 
