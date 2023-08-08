@@ -1,3 +1,7 @@
+<p align="center">
+<img width=75% src="/gridstatus-header.png" alt="gridstatus logo" />
+</p>
+
 # GridStatus.io Hosted API
 
 Python client for accessing the [GridStatus.io Hosted API](https://www.gridstatus.io/api).
