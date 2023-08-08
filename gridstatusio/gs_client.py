@@ -190,7 +190,7 @@ class GridStatusClient:
         filter_column=None,
         filter_value=None,
         filter_operator="=",
-        limit=10000,
+        limit=None,
         max_rows=None,
         tz=None,
         verbose=True,
@@ -212,7 +212,7 @@ class GridStatusClient:
                 Defaults to "=". Possible values are "=",
                 "!=", ">", "<", ">=", "<=", "in".
             limit (int): The maximum number of rows to fetch at time.
-                Defaults to 10000.
+                Defaults maximum allowed by the API.
             max_rows (int): The maximum number of rows to fetch.
                 Defaults to None, which fetches all rows that match the request.
             tz (str): The timezone to convert utc timestamps to. Defaults to UTC.

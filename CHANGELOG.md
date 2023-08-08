@@ -6,6 +6,10 @@
 
 - Add stacked net load visualization example notebook
 
+### Enhancements
+
+- When using `client.get_dataset()`, the number of rows per request now defaults to maximum allowed by your API key. You can specify a lower limit using the `limit` parameter. We recommend using the default for maximum performance.
+
 ## v0.4.0 - July 31, 2023
 
 ### Enhancements
