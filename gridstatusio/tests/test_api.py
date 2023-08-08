@@ -7,6 +7,14 @@ import gridstatusio as gs
 client = gs.GridStatusClient(api_key=os.getenv("GRIDSTATUS_API_KEY_TEST"))
 
 
+def test_invalid_api_key():
+    client = gs.GridStatusClient(api_key="invalid")
+    try:
+        client.get_dataset(dataset="isone_fuel_mix", verbose=True)
+    except Exception as e:
+        assert "Invalid API key" in str(e)
+
+
 def test_uses_columns():
     dataset = "ercot_sced_gen_resource_60_day"
     columns = ["interval_start_utc", "interval_end_utc", "resource_name"]
