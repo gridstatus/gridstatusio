@@ -29,7 +29,7 @@ def test_uses_columns():
     assert len(df) == max_rows, "Expected max_rows to be respected"
 
     # no columns specified
-    ncols = 28
+    ncols = 29
     df = client.get_dataset(dataset=dataset, verbose=True, max_rows=max_rows)
     assert df.shape == (max_rows, ncols), "Expected all columns"
 

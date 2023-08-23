@@ -305,10 +305,17 @@ class GridStatusClient:
         # or are of type object
         for col in df.columns:
             if df[col].dtype == "object" or col.endswith("_utc"):
+                # if ends with _utc we assume it's a datetime
+                # so let pandas infer the format
+                # otherwise we try but it must match the format
+                date_format = "%Y-%m-%dT%H:%M:%S%z"
+                if col.endswith("_utc"):
+                    date_format = None
+
                 try:
                     df[col] = pd.to_datetime(
                         df[col],
-                        format="ISO8601",
+                        format=date_format,
                         utc=True,
                     )
 
