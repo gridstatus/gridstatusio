@@ -1,6 +1,6 @@
 # Changelog
 
-## vNext
+## v0.5.0 - Aug 22, 2023
 
 ### Examples
 
