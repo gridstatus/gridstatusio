@@ -1,5 +1,11 @@
 # Changelog
 
+## vNext
+
+### Enhancements
+
+- Checks for an updated version of gridstatusio library at import and alerts user if a newer version is available.
+
 ## v0.5.0 - Aug 22, 2023
 
 ### Examples
