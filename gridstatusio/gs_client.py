@@ -306,18 +306,30 @@ class GridStatusClient:
         for col in df.columns:
             if df[col].dtype == "object" or col.endswith("_utc"):
                 # if ends with _utc we assume it's a datetime
-                # so let pandas infer the format
-                # otherwise we try but it must match the format
-                date_format = "%Y-%m-%dT%H:%M:%S%z"
+
+                is_definitely_datetime = False
                 if col.endswith("_utc"):
-                    date_format = None
+                    is_definitely_datetime = True
 
                 try:
+                    # if it's definitely a datetime we try without a format
+                    # otherwise we try but it must match the format
+                    # to avoid converting non-datetime columns
+                    date_format = "%Y-%m-%dT%H:%M:%S%z"
+                    if is_definitely_datetime:
+                        date_format = None
+
                     df[col] = pd.to_datetime(
                         df[col],
                         format=date_format,
                         utc=True,
                     )
+
+                    # if all values are NaT and its not
+                    # assume its not a datetime column
+                    if not is_definitely_datetime and df[col].isnull().all():
+                        df[col] = pd.NA
+                        continue
 
                     if tz != "UTC":
                         df[col] = df[col].dt.tz_convert(tz)
@@ -325,6 +337,7 @@ class GridStatusClient:
                         df = df.rename(
                             columns={col: col.replace("_utc", "") + "_local"},
                         )
+
                 except ValueError:
                     pass
 

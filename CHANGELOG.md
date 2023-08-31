@@ -1,5 +1,11 @@
 # Changelog
 
+## vNext
+
+### Bug Fixes
+
+- Fix date parsing in cases where there is no data or all missing values
+
 ## v0.5.1 - Aug 22, 2023
 
 ### Enhancements

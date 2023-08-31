@@ -53,6 +53,7 @@ def _check_dataframe(df):
     assert isinstance(df, pd.DataFrame)
     assert len(df) > 0
 
+    # todo should really on be either utc or local
     # possible datetime columns
     datetime_columns = [
         "interval_start_utc",
@@ -266,3 +267,99 @@ def test_get_dataset_verbose(capsys):
     assert captured.out != ""
     assert "Done in" in captured.out
     assert "Params: {" not in captured.out
+
+
+def test_handles_all_nan_columns():
+    # these are dates with no btm solar data
+    start = "2020-01-01"
+    end = "2020-01-02"
+    btm_col = "btm_solar.capitl"
+    time_columns = ["interval_start_utc", "interval_end_utc"]
+    time_columns_local = ["interval_start_local", "interval_end_local"]
+
+    # with time zone
+    df = client.get_dataset(
+        "nyiso_standardized_5_min",
+        start=start,
+        end=end,
+        tz="America/New_York",
+        columns=time_columns + [btm_col],
+    )
+
+    assert set(time_columns_local + [btm_col]) == set(df.columns)
+    assert pd.api.types.is_datetime64_any_dtype(df[time_columns_local[0]])
+    assert pd.api.types.is_datetime64_any_dtype(df[time_columns_local[1]])
+    assert df[btm_col].dtype == "object"
+
+    # without timezone
+    df = client.get_dataset(
+        "nyiso_standardized_5_min",
+        start=start,
+        end=end,
+        columns=time_columns + [btm_col],
+    )
+
+    assert set(time_columns + [btm_col]) == set(df.columns)
+    assert pd.api.types.is_datetime64_any_dtype(df[time_columns[0]])
+    assert pd.api.types.is_datetime64_any_dtype(df[time_columns[1]])
+    assert df[btm_col].dtype == "object"
+
+
+def test_handles_no_results():
+    btm_col = "capitl"
+    time_columns = ["interval_start_utc", "interval_end_utc"]
+    time_columns_local = ["interval_start_local", "interval_end_local"]
+
+    # no data, with time zone
+    df = client.get_dataset(
+        "nyiso_btm_solar",
+        start="2020-01-01",
+        end="2020-01-02",
+        tz="America/New_York",
+        columns=time_columns + [btm_col],
+    )
+
+    assert set(time_columns_local + [btm_col]) == set(df.columns)
+    assert pd.api.types.is_datetime64_any_dtype(df[time_columns_local[0]])
+    assert pd.api.types.is_datetime64_any_dtype(df[time_columns_local[1]])
+    assert df[btm_col].dtype == "object"
+
+    # no data, without timezone
+    df = client.get_dataset(
+        "nyiso_btm_solar",
+        start="2020-01-01",
+        end="2020-01-02",
+        columns=time_columns + [btm_col],
+    )
+
+    assert set(time_columns + [btm_col]) == set(df.columns)
+    assert pd.api.types.is_datetime64_any_dtype(df[time_columns[0]])
+    assert pd.api.types.is_datetime64_any_dtype(df[time_columns[1]])
+    assert df[btm_col].dtype == "object"
+
+    # this date range crosses from no data to data, with timezone
+    df = client.get_dataset(
+        "nyiso_btm_solar",
+        start="2020-11-16",
+        end="2020-11-18",
+        tz="America/New_York",
+        columns=time_columns + [btm_col],
+    )
+
+    assert set(time_columns_local + [btm_col]) == set(df.columns)
+    assert pd.api.types.is_datetime64_any_dtype(df[time_columns_local[0]])
+    assert pd.api.types.is_datetime64_any_dtype(df[time_columns_local[1]])
+    assert df[btm_col].dtype == "float64"
+
+    # this date range crosses from no data to data, without timezone
+    df = client.get_dataset(
+        "nyiso_btm_solar",
+        start="2020-11-16",
+        end="2020-11-18",
+        columns=time_columns + [btm_col],
+    )
+
+    assert set(time_columns + [btm_col]) == set(df.columns)
+    assert pd.api.types.is_datetime64_any_dtype(df[time_columns[0]])
+    assert pd.api.types.is_datetime64_any_dtype(df[time_columns[1]])
+    assert df[btm_col].dtype == "float64"
