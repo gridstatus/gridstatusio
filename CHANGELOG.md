@@ -1,6 +1,6 @@
 # Changelog
 
-## vNext
+## v0.5.2 - Aug 31, 2023
 
 ### Bug Fixes
 
