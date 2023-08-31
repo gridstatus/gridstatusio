@@ -306,15 +306,16 @@ class GridStatusClient:
         for col in df.columns:
             if df[col].dtype == "object" or col.endswith("_utc"):
                 # if ends with _utc we assume it's a datetime
-                # so let pandas infer the format
-                # otherwise we try but it must match the format
-                date_format = "%Y-%m-%dT%H:%M:%S%z"
-                inferring_if_date = True
+
+                is_definitely_datetime = False
                 if col.endswith("_utc"):
-                    date_format = None
-                    inferring_if_date = False
+                    is_definitely_datetime = True
 
                 try:
+                    date_format = "%Y-%m-%dT%H:%M:%S%z"
+                    if is_definitely_datetime:
+                        date_format = None
+
                     df[col] = pd.to_datetime(
                         df[col],
                         format=date_format,
@@ -323,7 +324,7 @@ class GridStatusClient:
 
                     # if all values are NaT and its not
                     # assume its not a datetime column
-                    if inferring_if_date and df[col].isnull().all():
+                    if not is_definitely_datetime and df[col].isnull().all():
                         df[col] = pd.NA
                         continue
 
