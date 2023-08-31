@@ -53,6 +53,7 @@ def _check_dataframe(df):
     assert isinstance(df, pd.DataFrame)
     assert len(df) > 0
 
+    # todo should really on be either utc or local
     # possible datetime columns
     datetime_columns = [
         "interval_start_utc",
@@ -269,6 +270,9 @@ def test_get_dataset_verbose(capsys):
 
 
 def test_handles_all_nan_columns():
+    # these are dates with no btm solar data
+    start = "2020-01-01"
+    end = "2020-01-02"
     btm_col = "btm_solar.capitl"
     time_columns = ["interval_start_utc", "interval_end_utc"]
     time_columns_local = ["interval_start_local", "interval_end_local"]
@@ -276,8 +280,8 @@ def test_handles_all_nan_columns():
     # with time zone
     df = client.get_dataset(
         "nyiso_standardized_5_min",
-        start="2020-01-01",
-        end="2020-01-02",
+        start=start,
+        end=end,
         tz="America/New_York",
         columns=time_columns + [btm_col],
     )
@@ -290,8 +294,8 @@ def test_handles_all_nan_columns():
     # without timezone
     df = client.get_dataset(
         "nyiso_standardized_5_min",
-        start="2020-01-01",
-        end="2020-01-02",
+        start=start,
+        end=end,
         columns=time_columns + [btm_col],
     )
 
@@ -333,7 +337,7 @@ def test_handles_no_results():
     assert pd.api.types.is_datetime64_any_dtype(df[time_columns[1]])
     assert df[btm_col].dtype == "object"
 
-    # this date range crosses from no data to data
+    # this date range crosses from no data to data, with timezone
     df = client.get_dataset(
         "nyiso_btm_solar",
         start="2020-11-16",
