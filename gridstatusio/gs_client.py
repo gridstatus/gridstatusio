@@ -312,6 +312,9 @@ class GridStatusClient:
                     is_definitely_datetime = True
 
                 try:
+                    # if it's definitely a datetime we try without a format
+                    # otherwise we try but it must match the format
+                    # to avoid converting non-datetime columns
                     date_format = "%Y-%m-%dT%H:%M:%S%z"
                     if is_definitely_datetime:
                         date_format = None
