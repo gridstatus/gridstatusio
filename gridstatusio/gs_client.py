@@ -309,8 +309,10 @@ class GridStatusClient:
                 # so let pandas infer the format
                 # otherwise we try but it must match the format
                 date_format = "%Y-%m-%dT%H:%M:%S%z"
+                inferring_if_date = True
                 if col.endswith("_utc"):
                     date_format = None
+                    inferring_if_date = False
 
                 try:
                     df[col] = pd.to_datetime(
@@ -319,12 +321,19 @@ class GridStatusClient:
                         utc=True,
                     )
 
+                    # if all values are NaT and its not
+                    # assume its not a datetime column
+                    if inferring_if_date and df[col].isnull().all():
+                        df[col] = pd.NA
+                        continue
+
                     if tz != "UTC":
                         df[col] = df[col].dt.tz_convert(tz)
                         # rename with _utc suffix
                         df = df.rename(
                             columns={col: col.replace("_utc", "") + "_local"},
                         )
+
                 except ValueError:
                     pass
 
