@@ -6,7 +6,6 @@ import gridstatusio as gs
 
 client = gs.GridStatusClient(
     api_key=os.getenv("GRIDSTATUS_API_KEY_TEST"),
-    host="http://localhost:8000/v1",
 )
 
 
