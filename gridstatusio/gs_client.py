@@ -190,6 +190,7 @@ class GridStatusClient:
         filter_column=None,
         filter_value=None,
         filter_operator="=",
+        resample=None,
         limit=None,
         max_rows=None,
         tz=None,
@@ -246,6 +247,7 @@ class GridStatusClient:
                 "limit": limit,
                 "page": page,
                 "max_rows": max_rows,
+                "resample_frequency": resample,
             }
             url = f"{self.host}/datasets/{dataset}/query/"
             if filter_column is not None:
