@@ -36,7 +36,7 @@ Other Examples:
 
 - [Stacked Net Load Visualization](/Examples/Stacked%20Net%20Load%20Visualization.ipynb)
 - [CAISO April Net Load Analysis](/Examples/CAISO%20April%20Net%20Load.ipynb)
-- [Resample Data](/Examples/Resample%20Data.ipynb)
+- [Resample Data to Different Frequencies](/Examples/Resample%20Data.ipynb)
 
 ## Open Source
 
