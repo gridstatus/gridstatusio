@@ -10,7 +10,6 @@
     </a>
 </p>
 
-
 # GridStatus.io Hosted API
 
 Python client for accessing the [GridStatus.io Hosted API](https://www.gridstatusio.io/api).
@@ -37,6 +36,7 @@ Other Examples:
 
 - [Stacked Net Load Visualization](/Examples/Stacked%20Net%20Load%20Visualization.ipynb)
 - [CAISO April Net Load Analysis](/Examples/CAISO%20April%20Net%20Load.ipynb)
+- [Resample Data to Different Frequencies](/Examples/Resample%20Data.ipynb)
 
 ## Open Source
 

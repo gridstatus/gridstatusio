@@ -4,7 +4,9 @@ import pandas as pd
 
 import gridstatusio as gs
 
-client = gs.GridStatusClient(api_key=os.getenv("GRIDSTATUS_API_KEY_TEST"))
+client = gs.GridStatusClient(
+    api_key=os.getenv("GRIDSTATUS_API_KEY_TEST"),
+)
 
 
 def test_invalid_api_key():
@@ -49,7 +51,7 @@ def test_list_datasets_filter():
     ), f"Expected at least {min_results} results with filter term '{filter_term}'"
 
 
-def _check_dataframe(df):
+def _check_dataframe(df, length=None, columns=None):
     assert isinstance(df, pd.DataFrame)
     assert len(df) > 0
 
@@ -64,6 +66,12 @@ def _check_dataframe(df):
     for c in datetime_columns:
         if c in df.columns:
             assert pd.api.types.is_datetime64_any_dtype(df[c])
+
+    if columns is not None:
+        assert df.columns.to_list() == columns
+
+    if length is not None:
+        assert len(df) == length
     assert df.index.is_unique
 
 
@@ -209,6 +217,21 @@ def test_filter_operator():
 
     _check_dataframe(df)
     assert df["curtailment_mw"].unique() == [numeric_value]
+
+
+def test_filter_operator_in():
+    locations = ["LZ_WEST", "LZ_HOUSTON"]
+    df = client.get_dataset(
+        dataset="ercot_spp_day_ahead_hourly",
+        filter_column="location",
+        filter_value=locations,
+        filter_operator="in",
+        start=pd.Timestamp("2023-09-07"),
+        max_rows=10,
+        verbose=True,
+    )
+    assert set(df["location"].unique()) == set(locations)
+    _check_dataframe(df)
 
 
 def test_get_dataset_verbose(capsys):
@@ -363,3 +386,101 @@ def test_handles_no_results():
     assert pd.api.types.is_datetime64_any_dtype(df[time_columns[0]])
     assert pd.api.types.is_datetime64_any_dtype(df[time_columns[1]])
     assert df[btm_col].dtype == "float64"
+
+
+def test_resample_frequency():
+    # test with interval_start_utc
+    df = client.get_dataset(
+        dataset="isone_fuel_mix",
+        start="2023-01-01",
+        end="2023-01-02",
+        resample="hour",
+        verbose=True,
+    )
+
+    assert df.shape[0] == 24
+    _check_dataframe(
+        df,
+        columns=[
+            "interval_start_utc",
+            "interval_end_utc",
+            "coal",
+            "hydro",
+            "landfill_gas",
+            "natural_gas",
+            "nuclear",
+            "oil",
+            "other",
+            "refuse",
+            "solar",
+            "wind",
+            "wood",
+        ],
+    )
+
+    # test with columns
+    # should always return time columns
+    df = client.get_dataset(
+        dataset="isone_fuel_mix",
+        start="2023-01-01",
+        end="2023-01-02",
+        columns=["coal"],
+        resample="hour",
+        verbose=True,
+    )
+    assert df.shape[0] == 24
+    _check_dataframe(
+        df,
+        columns=[
+            "interval_start_utc",
+            "interval_end_utc",
+            "coal",
+        ],
+    )
+
+    # test with time_utc column only
+    df = client.get_dataset(
+        dataset="ercot_real_time_as_monitor",
+        start="2023-08-01",
+        end="2023-08-02",
+        columns=["time_utc", "prc"],
+        resample="5 minutes",
+        verbose=True,
+    )
+
+    _check_dataframe(
+        df,
+        length=288,
+        columns=[
+            "time_utc",
+            "resample_frequency",
+            "prc",
+        ],
+    )
+
+    # assert resample_frequency is 5 minute
+    assert df["resample_frequency"].unique() == ["5 MINUTES"]
+
+    # test with time_utc column only, dont need to specify plural
+    df = client.get_dataset(
+        dataset="ercot_real_time_as_monitor",
+        start="2023-08-01",
+        end="2023-08-02",
+        columns=["time_utc", "prc"],
+        # dont need to specify plural
+        resample="4 hour",
+        verbose=True,
+    )
+
+    _check_dataframe(
+        df,
+        length=6,
+        columns=[
+            "time_utc",
+            "resample_frequency",
+            "prc",
+        ],
+    )
+
+    # assert resample_frequency is 5 minute
+    assert df["resample_frequency"].unique() == ["4 HOUR"]
