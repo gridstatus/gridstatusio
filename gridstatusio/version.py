@@ -1,7 +1,7 @@
 import requests
 from termcolor import colored
 
-__version__ = "0.5.2"
+__version__ = "0.5.3"
 
 
 def get_latest_version():
@@ -12,9 +12,21 @@ def get_latest_version():
     return latest_version
 
 
+def version_is_higher(latest, current):
+    latest_parts = [int(x) for x in latest.split(".")]
+    current_parts = [int(x) for x in current.split(".")]
+
+    for latest_part, current_part in zip(latest_parts, current_parts):
+        if latest_part > current_part:
+            return True
+        elif latest_part < current_part:
+            return False
+    return False
+
+
 def check_for_update():
     latest = get_latest_version()
-    if latest != __version__:
+    if version_is_higher(latest, __version__):
         print(
             # make bold
             colored(
@@ -25,7 +37,13 @@ def check_for_update():
         )
         print(
             colored(
-                "We recommend upgrading via the 'pip install --upgrade gridstatusio' command.",  # noqa: E501
+                "\nWe recommend upgrading via the 'pip install --upgrade gridstatusio' command.",  # noqa: E501
+                "red",
+            ),
+        )
+        print(
+            colored(
+                "\nSee the changelog here: https://github.com/gridstatus/gridstatusio/blob/main/CHANGELOG.md",  # noqa: E501
                 "red",
             ),
         )
