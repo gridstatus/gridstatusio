@@ -37,7 +37,13 @@ def check_for_update():
         )
         print(
             colored(
-                "We recommend upgrading via the 'pip install --upgrade gridstatusio' command.",  # noqa: E501
+                "\nWe recommend upgrading via the 'pip install --upgrade gridstatusio' command.",  # noqa: E501
+                "red",
+            ),
+        )
+        print(
+            colored(
+                "\nSee the changelog here: https://github.com/gridstatus/gridstatusio/blob/main/CHANGELOG.md",  # noqa: E501
                 "red",
             ),
         )
