@@ -1,6 +1,6 @@
 # Changelog
 
-## vNext
+## v0.5.3 - Sept 15, 2023
 
 - Support data resampling with `resample` parameter
 

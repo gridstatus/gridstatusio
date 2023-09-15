@@ -1,12 +1,29 @@
 import os
 
 import pandas as pd
+import pytest
 
 import gridstatusio as gs
+from gridstatusio.version import version_is_higher
 
 client = gs.GridStatusClient(
     api_key=os.getenv("GRIDSTATUS_API_KEY_TEST"),
 )
+
+
+@pytest.mark.parametrize(
+    "latest, current, expected",
+    [
+        ("1.0.0", "0.9.9", True),
+        ("0.9.9", "1.0.0", False),
+        ("1.0.0", "1.0.0", False),
+        ("1.0.1", "1.0.0", True),
+        ("1.0.0", "1.0.1", False),
+        ("1.1.0", "1.0.9", True),
+    ],
+)
+def test_version_is_higher(latest, current, expected):
+    assert version_is_higher(latest, current) == expected
 
 
 def test_invalid_api_key():
@@ -19,7 +36,8 @@ def test_invalid_api_key():
 
 def test_uses_columns():
     dataset = "ercot_sced_gen_resource_60_day"
-    columns = ["interval_start_utc", "interval_end_utc", "resource_name"]
+    one_column = "resource_name"
+    columns = ["interval_start_utc", "interval_end_utc", one_column]
     max_rows = 100
     df = client.get_dataset(
         dataset=dataset,
@@ -27,13 +45,45 @@ def test_uses_columns():
         verbose=True,
         max_rows=max_rows,
     )
-    assert set(columns).issubset(df.columns), "Expected only the specified columns"
-    assert len(df) == max_rows, "Expected max_rows to be respected"
+    _check_dataframe(df, columns=columns, length=max_rows)
+
+    # time columns always included
+    # even if not specified
+    df = client.get_dataset(
+        dataset=dataset,
+        columns=[one_column],
+        verbose=True,
+        max_rows=max_rows,
+    )
+    _check_dataframe(df, columns=columns, length=max_rows)
 
     # no columns specified
     ncols = 29
     df = client.get_dataset(dataset=dataset, verbose=True, max_rows=max_rows)
     assert df.shape == (max_rows, ncols), "Expected all columns"
+
+
+def test_handles_unknown_columns():
+    dataset = "ercot_fuel_mix"
+
+    with pytest.raises(Exception) as e:
+        client.get_dataset(
+            dataset=dataset,
+            columns=["invalid_column"],
+            verbose=True,
+        )
+
+    assert "Column invalid_column not found in dataset" in str(e.value)
+
+    with pytest.raises(Exception) as e:
+        client.get_dataset(
+            dataset=dataset,
+            columns=["invalid_column"],
+            resample="1 hour",
+            verbose=True,
+        )
+
+    assert "Column invalid_column not found in dataset" in str(e.value)
 
 
 def test_list_datasets():
