@@ -8,6 +8,7 @@ from gridstatusio.version import version_is_higher
 
 client = gs.GridStatusClient(
     api_key=os.getenv("GRIDSTATUS_API_KEY_TEST"),
+    host="http://localhost:8000/v1",
 )
 
 
@@ -534,3 +535,59 @@ def test_resample_frequency():
 
     # assert resample_frequency is 5 minute
     assert df["resample_frequency"].unique() == ["4 HOUR"]
+
+
+def test_resample_by():
+    # test with interval_start_utc
+    df = client.get_dataset(
+        dataset="eia_ba_interchange_hourly",
+        start="Sep 1, 2023",
+        end="Sep 3, 2023",
+        resample="1 day",
+        resample_by=["interval_start_utc", "to_ba", "from_ba"],
+    )
+
+    _check_dataframe(
+        df,
+        # number of pairs times number of days
+        length=df[["to_ba", "from_ba"]].drop_duplicates().shape[0] * 2,
+        columns=["interval_start_utc", "interval_end_utc", "to_ba", "from_ba", "mw"],
+    )
+
+
+def test_resample_function():
+    # test with interval_start_utc
+    df_max = client.get_dataset(
+        dataset="caiso_load",
+        start="Sep 1, 2023",
+        end="Sep 3, 2023",
+        resample="1 day",
+        resample_function="max",
+    )
+
+    _check_dataframe(
+        df_max,
+        length=2,
+        columns=["interval_start_utc", "interval_end_utc", "load"],
+    )
+
+    df_min = client.get_dataset(
+        dataset="caiso_load",
+        start="Sep 1, 2023",
+        end="Sep 3, 2023",
+        resample="1 day",
+        resample_function="min",
+    )
+
+    _check_dataframe(
+        df_min,
+        length=2,
+        columns=["interval_start_utc", "interval_end_utc", "load"],
+    )
+
+    # interval_start_utc and interval_end_utc should be the same
+    # load max should be higher than load min
+
+    assert df_max["interval_start_utc"].equals(df_min["interval_start_utc"])
+    assert df_max["interval_end_utc"].equals(df_min["interval_end_utc"])
+    assert (df_max["load"] > df_min["load"]).all()
