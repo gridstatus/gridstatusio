@@ -191,6 +191,8 @@ class GridStatusClient:
         filter_value=None,
         filter_operator="=",
         resample=None,
+        resample_by=None,
+        resample_function="mean",
         limit=None,
         max_rows=None,
         tz=None,
@@ -212,6 +214,15 @@ class GridStatusClient:
             filter_operator (str): The operator to use for the filter.
                 Defaults to "=". Possible values are "=",
                 "!=", ">", "<", ">=", "<=", "in".
+            resample (str): The frequency to resample the data to. For example,
+                "30 minutes", "1 hour", "7 days", "1 year". Can be any integer
+                followed by a time unit. Defaults to None, which does not resample
+            resample_by (str or list): A column or list of columns to resample by.
+                By default resamples by the time index column. If resample
+                is None, this is ignored.
+            resample_function (str): The function to use for resampling. Defaults to
+                "mean". Possible values are "mean", "sum", "min", "max", "stddev",
+                "count", "variance". If resample is None, this is ignored.
             limit (int): The maximum number of rows to fetch at time.
                 Defaults maximum allowed by the API.
             max_rows (int): The maximum number of rows to fetch.
@@ -248,9 +259,15 @@ class GridStatusClient:
                 "page": page,
                 "max_rows": max_rows,
                 "resample_frequency": resample,
+                "resample_by": ",".join(resample_by)
+                if resample_by is not None
+                else None,
+                "resample_function": resample_function,
             }
+
             url = f"{self.host}/datasets/{dataset}/query/"
-            if filter_column is not None:
+            # todo test this conditional
+            if filter_column is not None or filter_value != "":
                 if isinstance(filter_value, list) and filter_operator == "in":
                     filter_value = ",".join(filter_value)
 
@@ -288,10 +305,6 @@ class GridStatusClient:
                 )
 
             page += 1
-
-            # time.sleep(
-            #     0.1
-            # )  # Add a small delay to ensure the output is updated correctly
 
         log("", verbose=verbose)  # Add a newline for cleaner output
 
