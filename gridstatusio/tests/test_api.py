@@ -554,6 +554,21 @@ def test_resample_by():
         columns=["interval_start_utc", "interval_end_utc", "to_ba", "from_ba", "mw"],
     )
 
+    # check that time_col is requeired
+
+    with pytest.raises(Exception) as e:
+        client.get_dataset(
+            dataset="eia_ba_interchange_hourly",
+            start="Sep 1, 2023",
+            end="Sep 3, 2023",
+            resample="1 day",
+            resample_by=["to_ba", "from_ba"],
+        )
+
+    assert "resample_by must include the time column: interval_start_utc." in str(
+        e.value,
+    )
+
 
 def test_resample_function():
     # test with interval_start_utc
