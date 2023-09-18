@@ -1,8 +1,8 @@
 # Changelog
 
-## v0.5.4 - Next
+## v0.5.4 - Sept 17, 2023
 
-- Add `resample_by` and `resample_function` parameters to further specify resampling behavior
+- Add `resample_by` and `resample_function` parameters to further specify resampling behavior. Example notebook: [Resample Data to Different Frequencies](/Examples/Resample%20Data.ipynb)
 
 ## v0.5.3 - Sept 15, 2023
 
