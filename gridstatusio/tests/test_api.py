@@ -8,7 +8,7 @@ from gridstatusio.version import version_is_higher
 
 client = gs.GridStatusClient(
     api_key=os.getenv("GRIDSTATUS_API_KEY_TEST"),
-    host="http://localhost:8000/v1",
+    # host="http://localhost:8000/v1",
 )
 
 
