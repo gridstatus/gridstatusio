@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.5 - TBD
+
+- Add support for querying based on `publish_time` to `client.get_dataset`
+
 ## v0.5.4 - Sept 17, 2023
 
 - Add `resample_by` and `resample_function` parameters to further specify resampling behavior. Example notebook: [Resample Data to Different Frequencies](/Examples/Resample%20Data.ipynb)

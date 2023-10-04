@@ -606,3 +606,48 @@ def test_resample_function():
     assert df_max["interval_start_utc"].equals(df_min["interval_start_utc"])
     assert df_max["interval_end_utc"].equals(df_min["interval_end_utc"])
     assert (df_max["load"] > df_min["load"]).all()
+
+
+def test_publish_time_latest():
+    today = pd.Timestamp.now(tz="UTC").floor("D")
+
+    df = client.get_dataset(
+        dataset="ercot_hourly_resource_outage_capacity_reports",
+        start=today - pd.Timedelta(days=2),
+        end=today,
+        publish_time="latest",
+        verbose=True,
+    )
+
+    assert df["publish_time_utc"].nunique() > 1, "Expected multiple publish times"
+    assert (
+        df["interval_start_utc"].value_counts() == 1
+    ).all(), "Expected each interval to only occur once"
+
+
+def test_publish_time_latest_report():
+    df = client.get_dataset(
+        dataset="ercot_hourly_resource_outage_capacity_reports",
+        publish_time="latest_report",
+        verbose=True,
+    )
+
+    assert df["publish_time_utc"].nunique() == 1, "Expected one publish time"
+    assert (
+        df["interval_start_utc"].value_counts() == 1
+    ).all(), "Expected each interval to only occur once"
+
+
+def test_publish_time_specific_time():
+    publish_time = "2023-10-04 04:02:52+00:00"
+
+    df = client.get_dataset(
+        dataset="ercot_hourly_resource_outage_capacity_reports",
+        publish_time=publish_time,
+        verbose=True,
+    )
+
+    assert (df["publish_time_utc"] == publish_time).all(), "Expected one publish time"
+    assert (
+        df["interval_start_utc"].value_counts() == 1
+    ).all(), "Expected each interval to only occur once"

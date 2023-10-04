@@ -190,6 +190,7 @@ class GridStatusClient:
         filter_column=None,
         filter_value=None,
         filter_operator="=",
+        publish_time=None,
         resample=None,
         resample_by=None,
         resample_function="mean",
@@ -202,32 +203,55 @@ class GridStatusClient:
 
         Parameters:
             dataset (str): The name of the dataset to fetch
+
             start (str): The start time of the data to fetch. If not provided,
                 defaults to the earliest available time for the dataset.
+
             end (str): The end time of the data to fetch. If not provided,
                 defaults to the latest available time for the dataset.
+
             columns (list): The columns to fetch. If not provided,
                 defaults to all available columns.
+
             filter_column (str): The column to filter on
+
             filter_value (str): The value to filter on. If filter operator is "in",
                 this should be a list of values.
+
             filter_operator (str): The operator to use for the filter.
                 Defaults to "=". Possible values are "=",
                 "!=", ">", "<", ">=", "<=", "in".
+
+            publish_time (str): Controls the filtering based on the dataset's
+                publish time. Possible values:
+                - 'latest_report': Returns records only from the most
+                    recently published report.
+                - For any given timestamp, fetches the most recently
+                    reported data point associated with it.
+                - timestamp str: Returns records that were published
+                    at the provided timestamp.
+                - None: No filtering based on publish time.
+
             resample (str): The frequency to resample the data to. For example,
                 "30 minutes", "1 hour", "7 days", "1 year". Can be any integer
                 followed by a time unit. Defaults to None, which does not resample
+
             resample_by (str or list): A column or list of columns to resample by.
                 By default resamples by the time index column. If resample
                 is None, this is ignored.
+
             resample_function (str): The function to use for resampling. Defaults to
                 "mean". Possible values are "mean", "sum", "min", "max", "stddev",
                 "count", "variance". If resample is None, this is ignored.
+
             limit (int): The maximum number of rows to fetch at time.
                 Defaults maximum allowed by the API.
+
             max_rows (int): The maximum number of rows to fetch.
                 Defaults to None, which fetches all rows that match the request.
+
             tz (str): The timezone to convert utc timestamps to. Defaults to UTC.
+
             verbose (bool): If set to True or "info", prints additional information.
                 If set to "debug", prints more additional debug information. If
                 set to False, no additional information is printed. Defaults to True.
@@ -263,6 +287,7 @@ class GridStatusClient:
                 if resample_by is not None
                 else None,
                 "resample_function": resample_function,
+                "publish_time": publish_time,
             }
 
             url = f"{self.host}/datasets/{dataset}/query/"
