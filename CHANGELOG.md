@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.5.5 - TBD
+## v0.5.5 - Dec 2, 2023
 
 - Add support for querying based on `publish_time` to `client.get_dataset`
 
