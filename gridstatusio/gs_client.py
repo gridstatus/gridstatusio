@@ -226,7 +226,7 @@ class GridStatusClient:
                 publish time. Possible values:
                 - 'latest_report': Returns records only from the most
                     recently published report.
-                - For any given timestamp, fetches the most recently
+                - 'latest': For any given timestamp, fetches the most recently
                     reported data point associated with it.
                 - timestamp str: Returns records that were published
                     at the provided timestamp.
