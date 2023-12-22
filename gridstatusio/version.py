@@ -1,7 +1,7 @@
 import requests
 from termcolor import colored
 
-__version__ = "0.5.5"
+__version__ = "0.5.6"
 
 
 def get_latest_version():

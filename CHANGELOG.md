@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.6 - Dec 22, 2023
+
+- Rename `max_rows` to `page_size`
+
 ## v0.5.5 - Dec 2, 2023
 
 - Add support for querying based on `publish_time` to `client.get_dataset`

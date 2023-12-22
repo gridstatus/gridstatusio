@@ -195,7 +195,7 @@ class GridStatusClient:
         resample_by=None,
         resample_function="mean",
         limit=None,
-        max_rows=None,
+        page_size=None,
         tz=None,
         verbose=True,
     ):
@@ -244,11 +244,11 @@ class GridStatusClient:
                 "mean". Possible values are "mean", "sum", "min", "max", "stddev",
                 "count", "variance". If resample is None, this is ignored.
 
-            limit (int): The maximum number of rows to fetch at time.
-                Defaults maximum allowed by the API.
-
-            max_rows (int): The maximum number of rows to fetch.
+            limit (int): The maximum number of rows to return across entire result set.
                 Defaults to None, which fetches all rows that match the request.
+
+            page_size (int): The maximum number of rows to fetch per page.
+                Defaults to None, which uses maximum allowed by subscription.
 
             tz (str): The timezone to convert utc timestamps to. Defaults to UTC.
 
@@ -281,16 +281,16 @@ class GridStatusClient:
                 "end_time": end,
                 "limit": limit,
                 "page": page,
-                "max_rows": max_rows,
+                "page_size": page_size,
                 "resample_frequency": resample,
                 "resample_by": ",".join(resample_by)
                 if resample_by is not None
                 else None,
-                "resample_function": resample_function,
+                "resample_function": resample_function if resample else None,
                 "publish_time": publish_time,
             }
 
-            url = f"{self.host}/datasets/{dataset}/query/"
+            url = f"{self.host}/datasets/{dataset}/query"
             # todo test this conditional
             if filter_column is not None or filter_value != "":
                 if isinstance(filter_value, list) and filter_operator == "in":
