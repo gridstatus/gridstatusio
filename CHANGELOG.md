@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.5.6 - Dec 22
+## v0.5.6 - Dec 22, 2023
 
 - Rename `max_rows` to `page_size`
 
