@@ -8,7 +8,6 @@ from gridstatusio.version import version_is_higher
 
 client = gs.GridStatusClient(
     api_key=os.getenv("GRIDSTATUS_API_KEY_TEST"),
-    # host="http://localhost:8000/v1",
 )
 
 
@@ -39,14 +38,14 @@ def test_uses_columns():
     dataset = "ercot_sced_gen_resource_60_day"
     one_column = "resource_name"
     columns = ["interval_start_utc", "interval_end_utc", one_column]
-    max_rows = 100
+    limit = 100
     df = client.get_dataset(
         dataset=dataset,
         columns=columns,
         verbose=True,
-        max_rows=max_rows,
+        limit=limit,
     )
-    _check_dataframe(df, columns=columns, length=max_rows)
+    _check_dataframe(df, columns=columns, length=limit)
 
     # time columns always included
     # even if not specified
@@ -54,14 +53,14 @@ def test_uses_columns():
         dataset=dataset,
         columns=[one_column],
         verbose=True,
-        max_rows=max_rows,
+        limit=limit,
     )
-    _check_dataframe(df, columns=columns, length=max_rows)
+    _check_dataframe(df, columns=columns, length=limit)
 
     # no columns specified
     ncols = 29
-    df = client.get_dataset(dataset=dataset, verbose=True, max_rows=max_rows)
-    assert df.shape == (max_rows, ncols), "Expected all columns"
+    df = client.get_dataset(dataset=dataset, verbose=True, limit=limit)
+    assert df.shape == (limit, ncols), "Expected all columns"
 
 
 def test_handles_unknown_columns():
@@ -165,7 +164,7 @@ def test_index_unique_multiple_pages():
 
 def test_filter_operator():
     dataset = "caiso_curtailment"
-    max_rows = 100
+    limit = 100
     category_column = "curtailment_type"
     category_value = "Economic"
     category_values = ["Economic", "SelfSchCut", "ExDispatch"]
@@ -177,7 +176,7 @@ def test_filter_operator():
         filter_column=category_column,
         filter_value=category_value,
         filter_operator="=",
-        max_rows=max_rows,
+        limit=limit,
         verbose=True,
     )
     _check_dataframe(df)
@@ -188,7 +187,7 @@ def test_filter_operator():
         filter_column=category_column,
         filter_value=category_value,
         filter_operator="!=",
-        max_rows=max_rows,
+        limit=limit,
         verbose=True,
     )
     _check_dataframe(df)
@@ -201,7 +200,7 @@ def test_filter_operator():
         filter_column=category_column,
         filter_value=category_values,
         filter_operator="in",
-        max_rows=max_rows,
+        limit=limit,
         verbose=True,
     )
     _check_dataframe(df)
@@ -214,7 +213,7 @@ def test_filter_operator():
         filter_column=numeric_column,
         filter_value=numeric_value,
         filter_operator="<",
-        max_rows=max_rows,
+        limit=limit,
         verbose=True,
     )
 
@@ -226,7 +225,7 @@ def test_filter_operator():
         filter_column=numeric_column,
         filter_value=numeric_value,
         filter_operator="<=",
-        max_rows=max_rows,
+        limit=limit,
         verbose=True,
     )
 
@@ -238,7 +237,7 @@ def test_filter_operator():
         filter_column=numeric_column,
         filter_value=numeric_value,
         filter_operator=">",
-        max_rows=max_rows,
+        limit=limit,
         verbose=True,
     )
 
@@ -250,7 +249,7 @@ def test_filter_operator():
         filter_column=numeric_column,
         filter_value=numeric_value,
         filter_operator=">=",
-        max_rows=max_rows,
+        limit=limit,
         verbose=True,
     )
 
@@ -262,7 +261,7 @@ def test_filter_operator():
         filter_column=numeric_column,
         filter_value=numeric_value,
         filter_operator="=",
-        max_rows=max_rows,
+        limit=limit,
         verbose=True,
     )
 
@@ -278,7 +277,7 @@ def test_filter_operator_in():
         filter_value=locations,
         filter_operator="in",
         start=pd.Timestamp("2023-09-07"),
-        max_rows=10,
+        limit=10,
         verbose=True,
     )
     assert set(df["location"].unique()) == set(locations)
@@ -291,7 +290,7 @@ def test_get_dataset_verbose(capsys):
         dataset="isone_fuel_mix",
         start="2023-01-01",
         end="2023-01-05",
-        max_rows=1,
+        limit=1,
         verbose=False,
     )
 
@@ -303,7 +302,7 @@ def test_get_dataset_verbose(capsys):
         dataset="isone_fuel_mix",
         start="2023-01-01",
         end="2023-01-05",
-        max_rows=1,
+        limit=1,
         verbose="debug",
     )
 
@@ -319,7 +318,7 @@ def test_get_dataset_verbose(capsys):
         dataset="isone_fuel_mix",
         start="2023-01-01",
         end="2023-01-05",
-        max_rows=1,
+        limit=1,
         verbose=True,
     )
 
@@ -333,7 +332,7 @@ def test_get_dataset_verbose(capsys):
         dataset="isone_fuel_mix",
         start="2023-01-01",
         end="2023-01-05",
-        max_rows=1,
+        limit=1,
         verbose="info",
     )
 
@@ -651,3 +650,54 @@ def test_publish_time_specific_time():
     assert (
         df["interval_start_utc"].value_counts() == 1
     ).all(), "Expected each interval to only occur once"
+
+
+def test_pagination():
+    dataset = "isone_fuel_mix"
+
+    # return 100 rows
+    df = client.get_dataset(
+        dataset=dataset,
+        limit=100,
+    )
+
+    assert len(df) == 100
+
+    # test multiple pages
+    df = client.get_dataset(
+        dataset=dataset,
+        limit=100,
+        page_size=25,
+    )
+    assert len(df) == 100
+
+    # test limit less than page size
+    df = client.get_dataset(
+        dataset=dataset,
+        limit=25,
+        page_size=100,
+    )
+    assert len(df) == 25
+
+    # test no limit, no page size
+    df = client.get_dataset(
+        dataset=dataset,
+        start=pd.Timestamp.now(tz="UTC") - pd.Timedelta(hours=1),
+    )
+    assert len(df) > 0
+
+    # test no limit, with page size
+    df = client.get_dataset(
+        dataset=dataset,
+        start=pd.Timestamp.now(tz="UTC") - pd.Timedelta(minutes=30),
+        # 5 minute data so at most 12 rows
+        page_size=1,
+    )
+    assert len(df) > 0
+
+    # test too large of page size errors
+    with pytest.raises(Exception):
+        client.get_dataset(
+            dataset=dataset,
+            page_size=10**10,
+        )
