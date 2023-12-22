@@ -244,11 +244,11 @@ class GridStatusClient:
                 "mean". Possible values are "mean", "sum", "min", "max", "stddev",
                 "count", "variance". If resample is None, this is ignored.
 
-            limit (int): The maximum number of rows to fetch at time.
-                Defaults maximum allowed by the API.
-
-            page_size (int): The maximum number of rows to fetch.
+            limit (int): The maximum number of rows to return across entire result set.
                 Defaults to None, which fetches all rows that match the request.
+
+            page_size (int): The maximum number of rows to fetch per page.
+                Defaults to None, which uses maximum allowed by subscription.
 
             tz (str): The timezone to convert utc timestamps to. Defaults to UTC.
 
