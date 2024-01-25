@@ -12,7 +12,7 @@
 
 # GridStatus.io Hosted API
 
-Python client for accessing the [GridStatus.io Hosted API](https://www.gridstatusio.io/api).
+Python client for accessing the [GridStatus.io Hosted API](https://www.gridstatus.io/api).
 
 ## Installation
 
