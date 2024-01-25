@@ -7,7 +7,6 @@ import gridstatusio as gs
 from gridstatusio.version import version_is_higher
 
 client = gs.GridStatusClient(
-    host="http://localhost:8000/v1",
     api_key=os.getenv("GRIDSTATUS_API_KEY_TEST"),
 )
 
@@ -639,6 +638,17 @@ def test_publish_time_and_resample():
     )
     assert df["publish_time_utc"].nunique() > 1, "Expected multiple publish times"
 
+    # make sure it still works if a column is provided
+    df = client.get_dataset(
+        dataset="ercot_hourly_resource_outage_capacity_reports",
+        start=today - pd.Timedelta(days=2),
+        end=today,
+        columns=["total_resource_mw_zone_south"],
+        resample="1 day",
+        verbose=True,
+    )
+    assert df["publish_time_utc"].nunique() > 1, "Expected multiple publish times"
+
     # because of resampling and provided publish time option
     # there is no longer a single publish time value for each row
     # so it should be removed
@@ -647,6 +657,21 @@ def test_publish_time_and_resample():
         start=today - pd.Timedelta(days=2),
         end=today,
         publish_time="latest",
+        resample="1 day",
+        verbose=True,
+    )
+    assert "publish_time_utc" not in df.columns, "Expected publish time to be removed"
+    assert (
+        df["interval_start_utc"].value_counts() == 1
+    ).all(), "Expected each interval to only occur once"
+
+    # make sure it still works if a column is provided
+    df = client.get_dataset(
+        dataset="ercot_hourly_resource_outage_capacity_reports",
+        start=today - pd.Timedelta(days=2),
+        end=today,
+        publish_time="latest",
+        columns=["total_resource_mw_zone_south"],
         resample="1 day",
         verbose=True,
     )
