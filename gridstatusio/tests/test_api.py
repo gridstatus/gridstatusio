@@ -624,6 +624,63 @@ def test_publish_time_latest():
     ).all(), "Expected each interval to only occur once"
 
 
+def test_publish_time_and_resample():
+    today = pd.Timestamp.now(tz="UTC").ceil("D")
+
+    # because no publish time is provided
+    # this is resampled by unique publish time
+    df = client.get_dataset(
+        dataset="ercot_hourly_resource_outage_capacity_reports",
+        start=today - pd.Timedelta(days=2),
+        end=today,
+        resample="1 day",
+        verbose=True,
+    )
+    assert df["publish_time_utc"].nunique() > 1, "Expected multiple publish times"
+
+    # make sure it still works if a column is provided
+    df = client.get_dataset(
+        dataset="ercot_hourly_resource_outage_capacity_reports",
+        start=today - pd.Timedelta(days=2),
+        end=today,
+        columns=["total_resource_mw_zone_south"],
+        resample="1 day",
+        verbose=True,
+    )
+    assert df["publish_time_utc"].nunique() > 1, "Expected multiple publish times"
+
+    # because of resampling and provided publish time option
+    # there is no longer a single publish time value for each row
+    # so it should be removed
+    df = client.get_dataset(
+        dataset="ercot_hourly_resource_outage_capacity_reports",
+        start=today - pd.Timedelta(days=2),
+        end=today,
+        publish_time="latest",
+        resample="1 day",
+        verbose=True,
+    )
+    assert "publish_time_utc" not in df.columns, "Expected publish time to be removed"
+    assert (
+        df["interval_start_utc"].value_counts() == 1
+    ).all(), "Expected each interval to only occur once"
+
+    # make sure it still works if a column is provided
+    df = client.get_dataset(
+        dataset="ercot_hourly_resource_outage_capacity_reports",
+        start=today - pd.Timedelta(days=2),
+        end=today,
+        publish_time="latest",
+        columns=["total_resource_mw_zone_south"],
+        resample="1 day",
+        verbose=True,
+    )
+    assert "publish_time_utc" not in df.columns, "Expected publish time to be removed"
+    assert (
+        df["interval_start_utc"].value_counts() == 1
+    ).all(), "Expected each interval to only occur once"
+
+
 def test_publish_time_latest_report():
     df = client.get_dataset(
         dataset="ercot_hourly_resource_outage_capacity_reports",
