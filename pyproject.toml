@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gridstatusio"
-version = "0.5.7"
+version = "0.5.8"
 readme = "README.md"
 description = "Python Client for GridStatus.io API"
 classifiers = [

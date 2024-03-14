@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.8 - March 14, 2024
+
+- [Does not affect usage]. Switch to `poetry` for package management
+
 ## v0.5.7 - March 14, 2024
 
 - Fix bug where `GridStatusClient.list_datasets` would error when `return_list=False`
