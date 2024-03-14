@@ -2,17 +2,46 @@ on:
   release:
     types: [published]
 
-name: Release
+name: Build and Release
 jobs:
-  pypi:
-    name: PyPI Release
+  pypi-release:
     runs-on: ubuntu-latest
+    # Uses trusted published from GitHub Actions. No need
+    # for credentials or API tokens.
+    # https://docs.pypi.org/trusted-publishers/using-a-publisher/
+    environment:
+      name: pypi
+      url: https://pypi.org/p/gridstatusio
+    permissions:
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
+
     steps:
-      - uses: actions/checkout@v3
-      - name: PyPI Upload
-        uses: FeatureLabs/gh-action-pypi-upload@v2
-        env:
-          PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-          TEST_PYPI_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
-          TEST_PYPI_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+
+    - name: Check version match
+      run: |
+        PACKAGE_VERSION=$(poetry version -s)
+        TAG_VERSION=${GITHUB_REF#refs/tags/v}
+        if [ "$PACKAGE_VERSION" != "$TAG_VERSION" ]; then
+          echo "Package version ($PACKAGE_VERSION) does not match tag version ($TAG_VERSION)"
+          exit 1
+        fi
+
+    - name: Install dependencies
+      run: poetry install
+
+    - name: Build package
+      run: poetry build
+
+    # https://github.com/pypa/gh-action-pypi-publish
+    - name: Publish package distributions to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
