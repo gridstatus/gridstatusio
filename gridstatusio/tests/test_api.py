@@ -95,6 +95,8 @@ def test_list_datasets():
 def test_list_datasets_filter():
     filter_term = "fuel_mix"
     min_results = 7
+    # run once without printing things out
+    client.list_datasets(filter_term=filter_term, return_list=False)
     datasets = client.list_datasets(filter_term=filter_term, return_list=True)
     assert (
         len(datasets) >= min_results
