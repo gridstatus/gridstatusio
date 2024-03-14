@@ -152,7 +152,10 @@ class GridStatusClient:
 
                     dataset_metadata = dataset.get("dataset_metadata", {})
                     num_rows = dataset_metadata.get("num_rows")
-                    available_cols = dataset_metadata.get("available_cols")
+                    available_cols = [
+                        col["name"]
+                        for col in dataset_metadata.get("available_cols", [])
+                    ]
 
                     if num_rows is not None:
                         dataset_table.append(
@@ -283,9 +286,9 @@ class GridStatusClient:
                 "page": page,
                 "page_size": page_size,
                 "resample_frequency": resample,
-                "resample_by": ",".join(resample_by)
-                if resample_by is not None
-                else None,
+                "resample_by": (
+                    ",".join(resample_by) if resample_by is not None else None
+                ),
                 "resample_function": resample_function if resample else None,
                 "publish_time": publish_time,
             }

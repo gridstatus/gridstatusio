@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.7 - March 14, 2024
+
+- Fix bug where `GridStatusClient.list_datasets` would error when `return_list=False`
+
 ## v0.5.6 - Dec 22, 2023
 
 - Rename `max_rows` to `page_size`
