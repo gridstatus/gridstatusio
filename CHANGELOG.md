@@ -1,8 +1,8 @@
 # Changelog
 
-## v0.5.9 - March 14, 2024
+## v0.5.9 - March 26, 2024
 
-- Fix bug where v0.5.8 was alerting a new version was available that didn't exist
+- Fix warning to upgrade when no upgrade is available
 
 ## v0.5.8 - March 14, 2024
 
