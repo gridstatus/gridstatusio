@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.9 - March 26, 2024
+
+- Fix warning to upgrade when already on latest version
+
 ## v0.5.8 - March 14, 2024
 
 - [Does not affect usage]. Switch to `poetry` for package management
