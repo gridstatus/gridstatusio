@@ -2,7 +2,7 @@
 
 ## v0.5.9 - March 26, 2024
 
-- Fix warning to upgrade when no upgrade is available
+- Fix warning to upgrade when already on latest version
 
 ## v0.5.8 - March 14, 2024
 
