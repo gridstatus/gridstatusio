@@ -505,7 +505,7 @@ def test_resample_frequency():
         length=288,
         columns=[
             "time_utc",
-            # always get interval columns when resampling
+            # always returns interval columns when resampling
             "interval_start_utc",
             "interval_end_utc",
             "resample_frequency",
@@ -532,7 +532,7 @@ def test_resample_frequency():
         length=6,
         columns=[
             "time_utc",
-            # always get interval columns when resampling
+            # always returns interval columns when resampling
             "interval_start_utc",
             "interval_end_utc",
             "resample_frequency",
