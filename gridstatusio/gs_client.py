@@ -276,7 +276,8 @@ class GridStatusClient:
         has_next_page = True
         dfs = []
         total_time = 0
-        while has_next_page:
+        total_rows = 0
+        while has_next_page and (limit is None or total_rows < limit):
             start_time = time.time()
 
             params = {
@@ -291,6 +292,7 @@ class GridStatusClient:
                 ),
                 "resample_function": resample_function if resample else None,
                 "publish_time": publish_time,
+                "last_row": None if page == 1 else dfs[-1].iloc[-1].to_dict(),
             }
 
             url = f"{self.host}/datasets/{dataset}/query"
@@ -310,6 +312,8 @@ class GridStatusClient:
             log(f"Fetching Page {page}...", verbose, end="")
 
             df, has_next_page = self.get(url, params=params, verbose=verbose)
+
+            total_rows += len(df)
 
             dfs.append(df)
 
