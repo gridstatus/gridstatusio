@@ -1,4 +1,5 @@
 import io
+import json
 import time
 
 import gridstatus
@@ -86,8 +87,9 @@ class GridStatusClient:
             if self.request_format == "json":
                 params["json_schema"] = "array-of-arrays"
 
-        log(f"\nGET {url}", verbose=verbose, level="debug")
-        log(f"Params: {params}", verbose=verbose, level="debug")
+        log(f"\nGET {url}", verbose=verbose, level="info")
+        log(f"Params: {params}", verbose=verbose, level="info")
+
         response = requests.get(url, params=params, headers=headers)
 
         if response.status_code != 200:
@@ -292,7 +294,9 @@ class GridStatusClient:
                 ),
                 "resample_function": resample_function if resample else None,
                 "publish_time": publish_time,
-                "last_row": None if page == 1 else dfs[-1].iloc[-1].to_dict(),
+                "last_row": None
+                if page == 1
+                else json.dumps(dfs[-1].iloc[-1].to_dict()),
             }
 
             url = f"{self.host}/datasets/{dataset}/query"
