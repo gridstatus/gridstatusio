@@ -87,8 +87,8 @@ class GridStatusClient:
             if self.request_format == "json":
                 params["json_schema"] = "array-of-arrays"
 
-        log(f"\nGET {url}", verbose=verbose, level="info")
-        log(f"Params: {params}", verbose=verbose, level="info")
+        log(f"\nGET {url}", verbose=verbose, level="debug")
+        log(f"Params: {params}", verbose=verbose, level="debug")
 
         response = requests.get(url, params=params, headers=headers)
 
