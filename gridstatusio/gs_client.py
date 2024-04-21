@@ -279,7 +279,7 @@ class GridStatusClient:
         dfs = []
         total_time = 0
         total_rows = 0
-        while has_next_page and (limit is None or total_rows < limit):
+        while has_next_page:
             start_time = time.time()
 
             params = {
@@ -294,9 +294,8 @@ class GridStatusClient:
                 ),
                 "resample_function": resample_function if resample else None,
                 "publish_time": publish_time,
-                "last_row": None
-                if page == 1
-                else json.dumps(dfs[-1].iloc[-1].to_dict()),
+                # Set to an empty string so this is included in the request
+                "last_row": "" if page == 1 else json.dumps(dfs[-1].iloc[-1].to_dict()),
             }
 
             url = f"{self.host}/datasets/{dataset}/query"
