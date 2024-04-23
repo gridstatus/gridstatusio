@@ -1,5 +1,4 @@
 import io
-import json
 import time
 
 import gridstatus
@@ -95,15 +94,17 @@ class GridStatusClient:
         if response.status_code != 200:
             raise Exception(f"Error {response.status_code}: {response.text}")
 
+        meta = None
         if self.request_format == "json":
             data = response.json()
             df = pd.DataFrame(data["data"][1:], columns=data["data"][0])
+            meta = data["meta"]
         elif self.request_format == "csv":
             df = pd.read_csv(io.StringIO(response.text), low_memory=False)
 
         has_next_page = response.headers["x-has-next-page"] == "true"
 
-        return df, has_next_page
+        return df, has_next_page, meta
 
     def list_datasets(self, filter_term=None, return_list=False):
         """List available datasets from the API,
@@ -121,7 +122,7 @@ class GridStatusClient:
         """
         url = f"{self.host}/datasets/"
 
-        df, has_next_page = self.get(url)
+        df, _has_next_page, _meta = self.get(url)
 
         matched_datasets = []
 
@@ -203,6 +204,7 @@ class GridStatusClient:
         page_size=None,
         tz=None,
         verbose=True,
+        use_cursor_pagination=True,
     ):
         """Get a dataset from GridStatus.io API
 
@@ -279,6 +281,7 @@ class GridStatusClient:
         dfs = []
         total_time = 0
         total_rows = 0
+        last_row = ""
         while has_next_page:
             start_time = time.time()
 
@@ -296,8 +299,12 @@ class GridStatusClient:
                 "publish_time": publish_time,
                 # Set to an empty string so this is included in the request.
                 # last_row is used for cursor-based pagination
-                "last_row": "" if page == 1 else json.dumps(dfs[-1].iloc[-1].to_dict()),
+                "last_row": last_row,
             }
+
+            # Not setting last_row turns of cursor pagination on the server.
+            if not use_cursor_pagination:
+                del params["last_row"]
 
             url = f"{self.host}/datasets/{dataset}/query"
             # todo test this conditional
@@ -315,7 +322,7 @@ class GridStatusClient:
             # Log the fetching message
             log(f"Fetching Page {page}...", verbose, end="")
 
-            df, has_next_page = self.get(url, params=params, verbose=verbose)
+            df, has_next_page, meta = self.get(url, params=params, verbose=verbose)
 
             total_rows += len(df)
 
@@ -341,6 +348,7 @@ class GridStatusClient:
                 )
 
             page += 1
+            last_row = meta.get("last_row")
 
         log("", verbose=verbose)  # Add a newline for cleaner output
 
