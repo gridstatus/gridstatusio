@@ -281,7 +281,8 @@ class GridStatusClient:
         dfs = []
         total_time = 0
         total_rows = 0
-        last_row = ""
+        # Set to an empty string so this is included in the request.
+        cursor = ""
         while has_next_page:
             start_time = time.time()
 
@@ -297,14 +298,12 @@ class GridStatusClient:
                 ),
                 "resample_function": resample_function if resample else None,
                 "publish_time": publish_time,
-                # Set to an empty string so this is included in the request.
-                # last_row is used for cursor-based pagination
-                "last_row": last_row,
+                "cursor": cursor,
             }
 
-            # Not setting last_row turns of cursor pagination on the server.
+            # Not setting cursor turns off cursor pagination on the server.
             if not use_cursor_pagination:
-                del params["last_row"]
+                del params["cursor"]
 
             url = f"{self.host}/datasets/{dataset}/query"
             # todo test this conditional
@@ -348,7 +347,7 @@ class GridStatusClient:
                 )
 
             page += 1
-            last_row = meta.get("last_row")
+            cursor = meta.get("cursor")
 
         log("", verbose=verbose)  # Add a newline for cleaner output
 
