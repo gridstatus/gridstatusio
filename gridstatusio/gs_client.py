@@ -281,7 +281,7 @@ class GridStatusClient:
         dfs = []
         total_time = 0
         total_rows = 0
-        # Set to an empty string so this is included in the request.
+        # Set cursor to an empty string to tell the server to use cursor pagination
         cursor = ""
         while has_next_page:
             start_time = time.time()
@@ -347,6 +347,8 @@ class GridStatusClient:
                 )
 
             page += 1
+
+            # Extract the cursor to send in the next request for cursor pagination
             cursor = meta.get("cursor")
 
         log("", verbose=verbose)  # Add a newline for cleaner output
