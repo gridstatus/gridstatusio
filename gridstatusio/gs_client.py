@@ -102,9 +102,7 @@ class GridStatusClient:
         elif self.request_format == "csv":
             df = pd.read_csv(io.StringIO(response.text), low_memory=False)
 
-        has_next_page = response.headers["x-has-next-page"] == "true"
-
-        return df, has_next_page, meta
+        return df, meta
 
     def list_datasets(self, filter_term=None, return_list=False):
         """List available datasets from the API,
@@ -122,7 +120,7 @@ class GridStatusClient:
         """
         url = f"{self.host}/datasets/"
 
-        df, _has_next_page, _meta = self.get(url)
+        df, _meta = self.get(url)
 
         matched_datasets = []
 
@@ -204,7 +202,7 @@ class GridStatusClient:
         page_size=None,
         tz=None,
         verbose=True,
-        use_cursor_pagination=True,
+        use_cursor_pagination=False,
     ):
         """Get a dataset from GridStatus.io API
 
@@ -263,6 +261,11 @@ class GridStatusClient:
                 If set to "debug", prints more additional debug information. If
                 set to False, no additional information is printed. Defaults to True.
 
+            use_cursor_pagination (bool): If set to True, uses cursor pagination on
+                the server side to fetch data. Defaults to False. When False, the
+                server will use page-based pagination which is generally slower
+                for large datasets.
+
         Returns:
             pd.DataFrame: The dataset as a pandas dataframe
         """
@@ -281,7 +284,7 @@ class GridStatusClient:
         dfs = []
         total_time = 0
         total_rows = 0
-        # Set cursor to an empty string to tell the server to use cursor pagination
+        # Initialize cursor to an empty string
         cursor = ""
         while has_next_page:
             start_time = time.time()
@@ -298,12 +301,11 @@ class GridStatusClient:
                 ),
                 "resample_function": resample_function if resample else None,
                 "publish_time": publish_time,
-                "cursor": cursor,
             }
 
             # Not setting cursor turns off cursor pagination on the server.
-            if not use_cursor_pagination:
-                del params["cursor"]
+            if use_cursor_pagination:
+                params["cursor"] = cursor
 
             url = f"{self.host}/datasets/{dataset}/query"
             # todo test this conditional
@@ -321,7 +323,10 @@ class GridStatusClient:
             # Log the fetching message
             log(f"Fetching Page {page}...", verbose, end="")
 
-            df, has_next_page, meta = self.get(url, params=params, verbose=verbose)
+            df, meta = self.get(url, params=params, verbose=verbose)
+            has_next_page = meta.get("hasNextPage", False)
+            # Extract the cursor to send in the next request for cursor pagination
+            cursor = meta.get("cursor")
 
             total_rows += len(df)
 
@@ -333,10 +338,7 @@ class GridStatusClient:
 
             # Update the fetching message with the done message
             if page == 1:
-                log(
-                    f"Done in {round(response_time, 2)} seconds. ",
-                    verbose,
-                )
+                log(f"Done in {round(response_time, 2)} seconds. ", verbose)
 
             else:
                 log(
@@ -346,10 +348,12 @@ class GridStatusClient:
                     verbose,
                 )
 
-            page += 1
+            if limit:
+                # Calculate percentage of rows fetched
+                pct = round((total_rows / limit) * 100, 2)
+                log(f"Rows fetched: {total_rows:,}/{limit:,} ({pct}%)", verbose)
 
-            # Extract the cursor to send in the next request for cursor pagination
-            cursor = meta.get("cursor")
+            page += 1
 
         log("", verbose=verbose)  # Add a newline for cleaner output
 
