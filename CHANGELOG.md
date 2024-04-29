@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.5.10 - Upcoming
+
+- Add ability to use cursor-based pagination instead of offset-based pagination.
+  - Cursor-based pagination can be 30-50% faster than offset-based pagination for large datasets.
+  - Enable cursor pagination by passing `use_cursor_pagination=True` to `client.get_dataset()`.
+
 ## v0.5.9 - March 26, 2024
 
 - Fix warning to upgrade when already on latest version

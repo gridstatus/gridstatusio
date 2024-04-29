@@ -37,7 +37,7 @@ gridstatus = "^0.20.0"
 pytest = "7.1.2"
 pytest-xdist = "3.0.2"
 pytest-rerunfailures = "10.3"
-ruff = "0.0.202"
+ruff = "0.0.291"
 black = {version = "22.12.0", extras = ["jupyter"]}
 pre-commit = "2.21.0"
 plotly = "^5.11.0"
