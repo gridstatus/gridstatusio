@@ -351,7 +351,7 @@ class GridStatusClient:
             if limit:
                 # Calculate percentage of rows fetched
                 pct = round((total_rows / limit) * 100, 2)
-                log(f"Rows fetched: {total_rows:,}/{limit:,} ({pct}%)", verbose)
+                log(f"Total rows: {total_rows:,}/{limit:,} ({pct}% of limit)", verbose)
 
             page += 1
 
