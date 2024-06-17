@@ -6,7 +6,6 @@
   - Cursor-based pagination can be 30-50% faster than offset-based pagination for large datasets.
   - Cursor-based pagination is the default for `client.get_dataset()`.
 - Drops support for Python 3.8 and adds support for Python 3.12.
-- Upgrades pandas to 2.2
 
 ## v0.5.9 - March 26, 2024
 
