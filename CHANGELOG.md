@@ -4,8 +4,9 @@
 
 - Add ability to use cursor-based pagination instead of offset-based pagination.
   - Cursor-based pagination can be 30-50% faster than offset-based pagination for large datasets.
-  - Enable cursor pagination by passing `use_cursor_pagination=True` to `client.get_dataset()`.
-- Makes cursor-based pagination the default for `client.get_dataset()`.
+  - Cursor-based pagination is the default for `client.get_dataset()`.
+- Drops support for Python 3.8 and adds support for Python 3.12.
+- Upgrades pandas to 2.2
 
 ## v0.5.9 - March 26, 2024
 
