@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.5.10 - Upcoming
+## v0.6.0 - June 17, 2024
 
 - Add ability to use cursor-based pagination instead of offset-based pagination.
   - Cursor-based pagination can be 30-50% faster than offset-based pagination for large datasets.
