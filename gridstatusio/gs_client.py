@@ -202,7 +202,7 @@ class GridStatusClient:
         page_size=None,
         tz=None,
         verbose=True,
-        use_cursor_pagination=False,
+        use_cursor_pagination=True,
     ):
         """Get a dataset from GridStatus.io API
 
@@ -284,8 +284,11 @@ class GridStatusClient:
         dfs = []
         total_time = 0
         total_rows = 0
-        # Initialize cursor to an empty string
+
+        # Initialize cursor to an empty string. If we are using cursor pagination, an
+        # empty string indicates the first page.
         cursor = ""
+
         while has_next_page:
             start_time = time.time()
 
@@ -303,9 +306,14 @@ class GridStatusClient:
                 "publish_time": publish_time,
             }
 
-            # Not setting cursor turns off cursor pagination on the server.
+            # Setting the cursor value in the parameters tells the server to use
+            # cursor pagination.
             if use_cursor_pagination:
-                params["cursor"] = cursor
+                # Cursor pagination cannot be used with resampling.
+                if not resample:
+                    params["cursor"] = cursor
+                else:
+                    log("Cursor pagination cannot be used with resampling.", verbose)
 
             url = f"{self.host}/datasets/{dataset}/query"
             # todo test this conditional
