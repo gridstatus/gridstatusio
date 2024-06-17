@@ -628,15 +628,8 @@ def test_resample_and_paginated():
         "resample": "1 hour",
     }
 
-    paginated = client.get_dataset(
-        **common_args,
-        page_size=100,
-    )
-
-    non_paginated = client.get_dataset(
-        **common_args,
-        page_size=1000,
-    )
+    paginated = client.get_dataset(**common_args, page_size=100)
+    non_paginated = client.get_dataset(**common_args, page_size=1000)
 
     assert paginated.equals(non_paginated)
 
@@ -653,6 +646,19 @@ def test_resample_and_paginated():
         "2023-01-02 00:00:00+0000",
         tz="UTC",
     )
+
+
+def test_resampling_across_days():
+    df = client.get_dataset(
+        dataset="isone_fuel_mix",
+        start="2023-01-01",
+        end="2023-01-03",
+        resample="1 day",
+        verbose=True,
+    )
+
+    assert df.shape[0] == 2
+    _check_dataframe(df)
 
 
 def test_cursor_pagination_equals_offset_pagination():
