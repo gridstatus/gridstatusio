@@ -618,6 +618,65 @@ def test_resample_function():
     assert (df_max["load"] > df_min["load"]).all()
 
 
+# Tests that resampling is correctly done across pages
+def test_resample_and_paginated():
+    common_args = {
+        "dataset": "isone_fuel_mix",
+        "start": "2023-01-01",
+        "end": "2023-01-02",
+        "limit": 1000,
+        "resample": "1 hour",
+    }
+
+    paginated = client.get_dataset(
+        **common_args,
+        page_size=100,
+    )
+
+    non_paginated = client.get_dataset(
+        **common_args,
+        page_size=1000,
+    )
+
+    assert paginated.equals(non_paginated)
+
+    assert len(paginated) == 24
+
+    _check_dataframe(paginated)
+
+    assert paginated["interval_start_utc"].min() == pd.Timestamp(
+        "2023-01-01 00:00:00+0000",
+        tz="UTC",
+    )
+
+    assert paginated["interval_end_utc"].max() == pd.Timestamp(
+        "2023-01-02 00:00:00+0000",
+        tz="UTC",
+    )
+
+
+def test_cursor_pagination_equals_offset_pagination():
+    common_args = {
+        "dataset": "ercot_lmp_by_bus",
+        "start": "2023-01-01",
+        "end": "2023-01-02",
+        "limit": 500,
+        "page_size": 100,
+    }
+
+    cursor = client.get_dataset(
+        **common_args,
+        use_cursor_pagination=True,
+    )
+
+    offset = client.get_dataset(
+        **common_args,
+        use_cursor_pagination=False,
+    )
+
+    assert cursor.equals(offset)
+
+
 def test_publish_time_latest():
     today = pd.Timestamp.now(tz="UTC").floor("D")
 
