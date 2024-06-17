@@ -167,7 +167,7 @@ def test_index_unique_multiple_pages():
 
 def test_filter_operator():
     dataset = "caiso_curtailment"
-    limit = 100
+    limit = 1000
     category_column = "curtailment_type"
     category_value = "Economic"
     category_values = ["Economic", "SelfSchCut", "ExDispatch"]
@@ -207,7 +207,9 @@ def test_filter_operator():
         verbose=True,
     )
     _check_dataframe(df)
-    assert set(df["curtailment_type"].unique()) == set(category_values)
+    # It's possible all of these values are not in the limited amount of data
+    # we fetch, so we use a superset check
+    assert set(category_values).issuperset(df["curtailment_type"].unique())
 
     # test numeric operators = ["<", "<=", ">", ">=", "="]
 
@@ -614,6 +616,71 @@ def test_resample_function():
     assert df_max["interval_start_utc"].equals(df_min["interval_start_utc"])
     assert df_max["interval_end_utc"].equals(df_min["interval_end_utc"])
     assert (df_max["load"] > df_min["load"]).all()
+
+
+# Tests that resampling is correctly done across pages
+def test_resample_and_paginated():
+    common_args = {
+        "dataset": "isone_fuel_mix",
+        "start": "2023-01-01",
+        "end": "2023-01-02",
+        "limit": 1000,
+        "resample": "1 hour",
+    }
+
+    paginated = client.get_dataset(**common_args, page_size=100)
+    non_paginated = client.get_dataset(**common_args, page_size=1000)
+
+    assert paginated.equals(non_paginated)
+
+    assert len(paginated) == 24
+
+    _check_dataframe(paginated)
+
+    assert paginated["interval_start_utc"].min() == pd.Timestamp(
+        "2023-01-01 00:00:00+0000",
+        tz="UTC",
+    )
+
+    assert paginated["interval_end_utc"].max() == pd.Timestamp(
+        "2023-01-02 00:00:00+0000",
+        tz="UTC",
+    )
+
+
+def test_resampling_across_days():
+    df = client.get_dataset(
+        dataset="isone_fuel_mix",
+        start="2023-01-01",
+        end="2023-01-03",
+        resample="1 day",
+        verbose=True,
+    )
+
+    assert df.shape[0] == 2
+    _check_dataframe(df)
+
+
+def test_cursor_pagination_equals_offset_pagination():
+    common_args = {
+        "dataset": "ercot_lmp_by_bus",
+        "start": "2023-01-01",
+        "end": "2023-01-02",
+        "limit": 500,
+        "page_size": 100,
+    }
+
+    cursor = client.get_dataset(
+        **common_args,
+        use_cursor_pagination=True,
+    )
+
+    offset = client.get_dataset(
+        **common_args,
+        use_cursor_pagination=False,
+    )
+
+    assert cursor.equals(offset)
 
 
 def test_publish_time_latest():
