@@ -16,7 +16,7 @@ Python client for accessing the [GridStatus.io Hosted API](https://www.gridstatu
 
 ## Installation
 
-gridstatusio supports python 3.8+. Install with pip:
+gridstatusio supports python 3.9+. Install with pip:
 
 ```bash
 pip install gridstatusio
