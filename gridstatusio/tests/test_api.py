@@ -167,7 +167,7 @@ def test_index_unique_multiple_pages():
 
 def test_filter_operator():
     dataset = "caiso_curtailment"
-    limit = 100
+    limit = 1000
     category_column = "curtailment_type"
     category_value = "Economic"
     category_values = ["Economic", "SelfSchCut", "ExDispatch"]
@@ -207,7 +207,9 @@ def test_filter_operator():
         verbose=True,
     )
     _check_dataframe(df)
-    assert set(df["curtailment_type"].unique()) == set(category_values)
+    # It's possible all of these values are not in the limited amount of data
+    # we fetch, so we use a superset check
+    assert set(category_values).issuperset(df["curtailment_type"].unique())
 
     # test numeric operators = ["<", "<=", ">", ">=", "="]
 
