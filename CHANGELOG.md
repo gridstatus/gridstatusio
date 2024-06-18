@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.2 - June 18, 2024
+
+- Sets capped version of Python to <4
+- Upgrades numpy to a version that supports Python 3.12
+
 ## 0.6.1 - June 17, 2024
 
 - Adds support for Python 3.12
