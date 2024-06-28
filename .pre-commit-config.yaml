@@ -31,7 +31,14 @@ repos:
         additional_dependencies: [".[jupyter]"]
         types_or: [python, jupyter]
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.0.291
+    rev: v0.5.0
     hooks:
       - id: ruff
-        args: ["--fix"]
+        types_or: [ python, jupyter ]
+        args:
+          - --fix
+          - --config=./pyproject.toml
+      - id: ruff-format
+        types_or: [ python, jupyter ]
+        args:
+          - --config=./pyproject.toml
