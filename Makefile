@@ -32,13 +32,13 @@ installdeps-docs:
 
 .PHONY: lint
 lint:
-	poetry run ruff gridstatusio/
-	poetry run black gridstatusio/ --check
+	poetry run ruff check gridstatusio/
+	poetry run ruff format gridstatusio/ --check
 
 .PHONY: lint-fix
 lint-fix:
-	poetry run ruff gridstatusio/ --fix
-	poetry run black gridstatusio/
+	poetry run ruff check gridstatusio/ --fix
+	poetry run ruff format gridstatusio/
 
 .PHONY: package
 package: upgradepip upgradebuild upgradesetuptools
