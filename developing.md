@@ -9,6 +9,8 @@
 poetry config virtualenvs.in-project true
 # Install the project dependencies
 poetry install --all-extras
+# Install pre-commit hooks
+poetry run pre-commit install
 ```
 
 * Activate the poetry shell by running `poetry shell`. This will run in a virtual environment with all the dependencies installed.
