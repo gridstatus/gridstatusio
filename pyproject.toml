@@ -57,10 +57,6 @@ markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
 ]
 
-[tool.black]
-line-length = 88
-target-version = ['py311']
-
 [tool.ruff]
 line-length = 88
 lint.ignore = []
