@@ -1,5 +1,6 @@
 import io
 import time
+from datetime import datetime
 
 import gridstatus
 import pandas as pd
@@ -66,7 +67,7 @@ class GridStatusClient:
     def __repr__(self) -> str:
         return f"GridStatusClient(host={self.host})"
 
-    def get(self, url, params=None, verbose=False):
+    def get(self, url, params=None, verbose=False, return_raw_response_json=False):
         if params is None:
             params = {}
 
@@ -93,6 +94,9 @@ class GridStatusClient:
 
         if response.status_code != 200:
             raise Exception(f"Error {response.status_code}: {response.text}")
+
+        if return_raw_response_json:
+            return response.json()
 
         meta = None
         if self.request_format == "json":
@@ -416,6 +420,34 @@ class GridStatusClient:
                     pass
 
         return df
+
+    def get_daily_peak_report(
+        self,
+        iso: str,
+        market_date: str | datetime | None = None,
+    ):
+        """Get a daily peak report from the GridStatus.io API for the specified
+        ISO on the specified date.
+
+        Parameters:
+            iso (str): The name of the iso for which to generate the report. Must
+            be one of: CAISO, ERCOT, ISONE, MISO, NYISO, PJM, SPP
+
+            market_date (str or date, optional): The market date for which to generate
+                the report. If provided as a string, specify date as YYYY-MM-DD format.
+                If not provided, defaults to the current date.
+
+        Returns:
+            dict: The daily peak report as a dict.
+        """
+        if market_date is None:
+            market_date = datetime.today()
+
+        if isinstance(market_date, datetime):
+            market_date = market_date.strftime("%Y-%m-%d")
+
+        url = f"{self.host}/reports/daily_peak/{iso}?date={market_date}"
+        return self.get(url, return_raw_response_json=True)
 
 
 if __name__ == "__main__":
