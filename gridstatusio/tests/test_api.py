@@ -837,27 +837,16 @@ def test_pagination():
         )
 
 
-def test_reports_api_no_date():
-    iso = "ERCOT"
-    resp = client.get_daily_peak_report(iso=iso)
-    assert isinstance(resp, dict)
-    assert resp["ISO"] == iso
-    assert resp["market_date"] == datetime.now().strftime("%Y-%m-%d")
-
-
-def test_reports_api_string_date():
-    iso = "CAISO"
-    market_date = "2024-07-01"
+@pytest.mark.parametrize(
+    "iso,market_date,expected_date",
+    [
+        ("ERCOT", None, datetime.now().strftime("%Y-%m-%d")),
+        ("CAISO", "2024-07-01", "2024-07-01"),
+        ("spp", datetime(2024, 7, 10), "2024-07-10"),
+    ],
+)
+def test_reports_api(iso, market_date, expected_date):
     resp = client.get_daily_peak_report(iso=iso, market_date=market_date)
     assert isinstance(resp, dict)
-    assert resp["ISO"] == iso
-    assert resp["market_date"] == market_date
-
-
-def test_reports_api_datetime_date():
-    iso = "CAISO"
-    market_date = datetime(2024, 7, 10)
-    resp = client.get_daily_peak_report(iso=iso, market_date=market_date)
-    assert isinstance(resp, dict)
-    assert resp["ISO"] == iso
-    assert resp["market_date"] == market_date.strftime("%Y-%m-%d")
+    assert resp["ISO"] == iso.upper()
+    assert resp["market_date"] == expected_date
