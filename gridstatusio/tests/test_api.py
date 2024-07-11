@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 import pandas as pd
 import pytest
@@ -834,3 +835,29 @@ def test_pagination():
             dataset=dataset,
             page_size=10**10,
         )
+
+
+def test_reports_api_no_date():
+    iso = "ERCOT"
+    resp = client.get_daily_peak_report(iso=iso)
+    assert isinstance(resp, dict)
+    assert resp["ISO"] == iso
+    assert resp["market_date"] == datetime.now().strftime("%Y-%m-%d")
+
+
+def test_reports_api_string_date():
+    iso = "CAISO"
+    market_date = "2024-07-01"
+    resp = client.get_daily_peak_report(iso=iso, market_date=market_date)
+    assert isinstance(resp, dict)
+    assert resp["ISO"] == iso
+    assert resp["market_date"] == market_date
+
+
+def test_reports_api_datetime_date():
+    iso = "CAISO"
+    market_date = datetime(2024, 7, 10)
+    resp = client.get_daily_peak_report(iso=iso, market_date=market_date)
+    assert isinstance(resp, dict)
+    assert resp["ISO"] == iso
+    assert resp["market_date"] == market_date.strftime("%Y-%m-%d")
