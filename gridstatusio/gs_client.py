@@ -1,6 +1,7 @@
 import io
 import time
 from datetime import datetime
+from typing import Dict, Union
 
 import gridstatus
 import pandas as pd
@@ -424,8 +425,8 @@ class GridStatusClient:
     def get_daily_peak_report(
         self,
         iso: str,
-        market_date: str | datetime | None = None,
-    ):
+        market_date: Union[str, datetime, None] = None,
+    ) -> Dict:
         """Get a daily peak report from the GridStatus.io API for the specified
         ISO on the specified date.
 
