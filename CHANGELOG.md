@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.3 - Upcoming
+
+- Adds a new `client.get_daily_peak_report()` method for accessing daily peak LMP/load data for a specific ISO and date.
+
 ## 0.6.2 - June 18, 2024
 
 - Sets capped version of Python to <4

@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 import pandas as pd
 import pytest
@@ -834,3 +835,18 @@ def test_pagination():
             dataset=dataset,
             page_size=10**10,
         )
+
+
+@pytest.mark.parametrize(
+    "iso,market_date,expected_date",
+    [
+        ("ERCOT", None, datetime.now().strftime("%Y-%m-%d")),
+        ("CAISO", "2024-07-01", "2024-07-01"),
+        ("spp", datetime(2024, 7, 10), "2024-07-10"),
+    ],
+)
+def test_reports_api(iso, market_date, expected_date):
+    resp = client.get_daily_peak_report(iso=iso, market_date=market_date)
+    assert isinstance(resp, dict)
+    assert resp["ISO"] == iso.upper()
+    assert resp["market_date"] == expected_date
