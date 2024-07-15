@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.6.3 - Upcoming
+## 0.6.3 - July 15, 2024
 
 - Adds a new `client.get_daily_peak_report()` method for accessing daily peak LMP/load data for a specific ISO and date.
 
