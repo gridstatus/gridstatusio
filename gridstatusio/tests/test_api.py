@@ -544,8 +544,34 @@ def test_resample_frequency():
         ],
     )
 
-    # assert resample_frequency is 5 minute
     assert df["resample_frequency"].unique() == ["4 HOUR"]
+
+    # test tz
+    df = client.get_dataset(
+        dataset="ercot_real_time_as_monitor",
+        start="2023-08-01",
+        end="2023-08-02",
+        columns=["time_utc", "prc"],
+        # dont need to specify plural
+        resample="1 hour",
+        tz="America/Chicago",
+        verbose=True,
+    )
+
+    _check_dataframe(
+        df,
+        length=24,
+        columns=[
+            "time_local",
+            # always returns interval columns when resampling
+            "interval_start_local",
+            "interval_end_local",
+            "resample_frequency",
+            "prc",
+        ],
+    )
+
+    assert df["resample_frequency"].unique() == ["1 HOUR"]
 
 
 def test_resample_by():
