@@ -128,7 +128,7 @@ class GridStatusClient:
         """
         url = f"{self.host}/datasets/"
 
-        df, _meta = self.get(url)
+        df, _meta, _dataset_metadata = self.get(url)
 
         matched_datasets = []
 
@@ -385,14 +385,31 @@ class GridStatusClient:
 
         all_columns = dataset_metadata.get("all_columns", [])
 
-        # convert to datetime any columns that are datetimes
-        for col in all_columns:
-            if col["is_datetime"]:
-                df[col] = pd.to_datetime(df[col], utc=True)
+        # These are columns that are always datetimes. In some situations, we will
+        # add these columns to a dataset even if they are not in the dataset metadata,
+        # for example, when resampling.
+        always_datetime_columns = [
+            "interval_start_utc",
+            "interval_end_utc",
+        ]
+
+        for col_name in df.columns:
+            col_metadata = next(
+                (col for col in all_columns if col["name"] == col_name),
+                None,
+            )
+
+            if (col_metadata and col_metadata["is_datetime"]) or (
+                col_name in always_datetime_columns
+            ):
+                df[col_name] = pd.to_datetime(df[col_name], utc=True)
+
                 if tz != "UTC":
-                    df[col] = df[col].dt.tz_convert(tz)
+                    df[col_name] = df[col_name].dt.tz_convert(tz)
                     # rename with _local suffix
-                    df = df.rename(columns={col: col.replace("_utc", "") + "_local"})
+                    df = df.rename(
+                        columns={col_name: col_name.replace("_utc", "") + "_local"},
+                    )
 
         return df
 
