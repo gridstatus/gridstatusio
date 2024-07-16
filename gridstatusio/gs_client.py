@@ -100,14 +100,17 @@ class GridStatusClient:
             return response.json()
 
         meta = None
+        dataset_metadata = None
+
         if self.request_format == "json":
             data = response.json()
             df = pd.DataFrame(data["data"][1:], columns=data["data"][0])
             meta = data["meta"]
+            dataset_metadata = data["dataset_metadata"]
         elif self.request_format == "csv":
             df = pd.read_csv(io.StringIO(response.text), low_memory=False)
 
-        return df, meta
+        return df, meta, dataset_metadata
 
     def list_datasets(self, filter_term=None, return_list=False):
         """List available datasets from the API,
@@ -294,6 +297,9 @@ class GridStatusClient:
         # empty string indicates the first page.
         cursor = ""
 
+        # This will be the same for all pages
+        dataset_metadata = None
+
         if use_cursor_pagination and resample:
             log("Cursor pagination cannot be used with resampling.", verbose)
 
@@ -338,7 +344,7 @@ class GridStatusClient:
             # Log the fetching message
             log(f"Fetching Page {page}...", verbose, end="")
 
-            df, meta = self.get(url, params=params, verbose=verbose)
+            df, meta, dataset_metadata = self.get(url, params=params, verbose=verbose)
             has_next_page = meta.get("hasNextPage", False)
             # Extract the cursor to send in the next request for cursor pagination
             cursor = meta.get("cursor")
@@ -375,50 +381,14 @@ class GridStatusClient:
         df = pd.concat(dfs).reset_index(drop=True)
 
         # Print the additional information
-        log(
-            f"Total number of rows: {len(df)}",
-            verbose=verbose,
-        )
+        log(f"Total number of rows: {len(df)}", verbose=verbose)
 
-        # convert to datetime for any columns that end in _utc
-        # or are of type object
-        for col in df.columns:
-            if df[col].dtype == "object" or col.endswith("_utc"):
-                # if ends with _utc we assume it's a datetime
+        all_columns = dataset_metadata.get("all_columns", [])
 
-                is_definitely_datetime = False
-                if col.endswith("_utc"):
-                    is_definitely_datetime = True
-
-                try:
-                    # if it's definitely a datetime we try without a format
-                    # otherwise we try but it must match the format
-                    # to avoid converting non-datetime columns
-                    date_format = "%Y-%m-%dT%H:%M:%S%z"
-                    if is_definitely_datetime:
-                        date_format = None
-
-                    df[col] = pd.to_datetime(
-                        df[col],
-                        format=date_format,
-                        utc=True,
-                    )
-
-                    # if all values are NaT and its not
-                    # assume its not a datetime column
-                    if not is_definitely_datetime and df[col].isnull().all():
-                        df[col] = pd.NA
-                        continue
-
-                    if tz != "UTC":
-                        df[col] = df[col].dt.tz_convert(tz)
-                        # rename with _utc suffix
-                        df = df.rename(
-                            columns={col: col.replace("_utc", "") + "_local"},
-                        )
-
-                except ValueError:
-                    pass
+        # convert to datetime any columns that are datetimes
+        for col in all_columns:
+            if col["is_datetime"]:
+                df[col] = pd.to_datetime(df[col], utc=True)
 
         return df
 
