@@ -389,6 +389,10 @@ class GridStatusClient:
         for col in all_columns:
             if col["is_datetime"]:
                 df[col] = pd.to_datetime(df[col], utc=True)
+                if tz != "UTC":
+                    df[col] = df[col].dt.tz_convert(tz)
+                    # rename with _local suffix
+                    df = df.rename(columns={col: col.replace("_utc", "") + "_local"})
 
         return df
 
