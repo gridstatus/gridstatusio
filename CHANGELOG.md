@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.5 - August 6, 2024
+
+- Remove `gridstatus` and add `tabulate` as dependencies.
+
 ## 0.6.4 - August 2, 2024
 
 - Updates pandas version to allow for pandas 2.0 compatibility
