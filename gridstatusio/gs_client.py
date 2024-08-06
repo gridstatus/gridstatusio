@@ -3,12 +3,12 @@ import time
 from datetime import datetime
 from typing import Dict, Union
 
-import gridstatus
 import pandas as pd
 import requests
 from tabulate import tabulate
 from termcolor import colored
 
+import utils
 from gridstatusio import __version__
 
 
@@ -281,10 +281,10 @@ class GridStatusClient:
             tz = "UTC"
 
         if start is not None:
-            start = gridstatus.utils._handle_date(start, tz)
+            start = utils._handle_date(start, tz)
 
         if end is not None:
-            end = gridstatus.utils._handle_date(end, tz)
+            end = utils._handle_date(end, tz)
 
         # handle pagination
         page = 1
