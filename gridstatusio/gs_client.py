@@ -8,8 +8,7 @@ import requests
 from tabulate import tabulate
 from termcolor import colored
 
-import utils
-from gridstatusio import __version__
+from gridstatusio import __version__, utils
 
 
 def log(msg, verbose, level="info", end="\n"):
@@ -281,10 +280,10 @@ class GridStatusClient:
             tz = "UTC"
 
         if start is not None:
-            start = utils._handle_date(start, tz)
+            start = utils.handle_date(start, tz)
 
         if end is not None:
-            end = utils._handle_date(end, tz)
+            end = utils.handle_date(end, tz)
 
         # handle pagination
         page = 1

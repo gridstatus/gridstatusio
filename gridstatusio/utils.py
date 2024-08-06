@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def _handle_date(date, tz=None):
+def handle_date(date, tz=None):
     if date is None:
         return date
 
