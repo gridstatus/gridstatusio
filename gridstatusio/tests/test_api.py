@@ -889,3 +889,18 @@ def test_reports_api(iso, market_date, expected_date):
     assert isinstance(resp, dict)
     assert resp["ISO"] == iso.upper()
     assert resp["market_date"] == expected_date
+
+
+def test_market_day_resampling():
+    df = client.get_dataset(
+        "pjm_outages_daily",
+        start="2024-01-01",
+        end="2024-05-01",
+        resample="1 month",
+        verbose=True,
+    )
+
+    _check_dataframe(df)
+
+    assert df["market_date"].nunique() == 1
+    assert df["market_date"].iloc[0] == "2023-01-01"
