@@ -701,6 +701,29 @@ def test_cursor_pagination_equals_offset_pagination():
     assert cursor.equals(offset)
 
 
+def test_cursor_pagination_equals_offset_pagination_with_resampling():
+    common_args = {
+        "dataset": "ercot_fuel_mix",
+        "start": "2023-01-01",
+        "end": "2023-01-02",
+        "limit": 50,
+        "page_size": 10,
+        "resample": "1 minute",
+    }
+
+    cursor = client.get_dataset(
+        **common_args,
+        use_cursor_pagination=True,
+    )
+
+    offset = client.get_dataset(
+        **common_args,
+        use_cursor_pagination=False,
+    )
+
+    assert cursor.equals(offset)
+
+
 def test_publish_time_latest():
     today = pd.Timestamp.now(tz="UTC").floor("D")
 
