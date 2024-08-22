@@ -902,5 +902,14 @@ def test_market_day_resampling():
 
     _check_dataframe(df)
 
-    assert df["market_date"].nunique() == 1
-    assert df["market_date"].iloc[0] == "2023-01-01"
+    assert df["interval_start_utc"].min() == pd.Timestamp("2024-01-01", tz="UTC")
+    assert df["interval_end_utc"].max() == pd.Timestamp("2024-05-01", tz="UTC")
+
+    # There should be exactly 1 row for each combination of month, region,
+    #  and publish time
+    assert (
+        df.groupby([df["interval_start_utc"].dt.month, "region", "publish_time_utc"])
+        .size()
+        .max()
+        == 1
+    )
