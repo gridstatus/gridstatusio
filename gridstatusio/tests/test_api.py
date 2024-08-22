@@ -891,7 +891,8 @@ def test_reports_api(iso, market_date, expected_date):
     assert resp["market_date"] == expected_date
 
 
-def test_market_day_resampling():
+# Tests resample with a market day dataset
+def test_market_day_data_resampling():
     df = client.get_dataset(
         "pjm_outages_daily",
         start="2024-01-01",
@@ -912,4 +913,34 @@ def test_market_day_resampling():
         .size()
         .max()
         == 1
+    )
+
+
+# Tests resampling to a market day frequency
+
+
+# Tests resample with a market day dataset
+def test_market_frequency_resampling():
+    df = client.get_dataset(
+        "pjm_load",
+        start="2024-01-01",
+        end="2024-05-01",
+        resample="1 day market",
+        verbose=True,
+    )
+
+    _check_dataframe(df)
+
+    # Starts on market day start (in UTC)
+    assert df["interval_start_utc"].min() == pd.Timestamp("2023-12-31 05:00:00+00:00")
+    # Ends on market day end (in UTC)
+    assert df["interval_end_utc"].max() == pd.Timestamp("2024-05-01 04:00:00+00:00")
+
+    # There should be exactly 1 row for each day
+    assert df["interval_start_utc"].dt.date.value_counts().max() == 1
+
+    # The minimum difference will be only 23 hours because of the transition
+    # from standard to daylight time
+    assert (df["interval_end_utc"] - df["interval_start_utc"]).min() == pd.Timedelta(
+        "23 hours",
     )
