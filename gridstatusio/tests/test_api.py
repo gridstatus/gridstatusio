@@ -1016,3 +1016,13 @@ def test_market_frequency_resampling():
 
     # Should have different values
     assert not df["load"].equals(df_day["load"])
+
+
+def test_invalid_resampling_frequency():
+    with pytest.raises(Exception):
+        client.get_dataset(
+            "pjm_load",
+            resample="1 hour market",
+            start="2024-01-01",
+            end="2024-01-02",
+        )
