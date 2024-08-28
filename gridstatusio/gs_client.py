@@ -299,9 +299,6 @@ class GridStatusClient:
         # This will be the same for all pages
         dataset_metadata = None
 
-        if use_cursor_pagination and resample:
-            log("Cursor pagination cannot be used with resampling.", verbose)
-
         while has_next_page:
             start_time = time.time()
 
@@ -322,10 +319,7 @@ class GridStatusClient:
             # Setting the cursor value in the parameters tells the server to use
             # cursor pagination.
             if use_cursor_pagination:
-                # Cursor pagination cannot be used with resampling as it is not
-                # supported by the server.
-                if not resample:
-                    params["cursor"] = cursor
+                params["cursor"] = cursor
 
             url = f"{self.host}/datasets/{dataset}/query"
             # todo test this conditional

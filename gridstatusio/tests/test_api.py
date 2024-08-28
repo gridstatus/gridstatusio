@@ -450,7 +450,7 @@ def test_resample_frequency():
         dataset="isone_fuel_mix",
         start="2023-01-01",
         end="2023-01-02",
-        resample="hour",
+        resample="1 hour",
         verbose=True,
     )
 
@@ -481,7 +481,7 @@ def test_resample_frequency():
         start="2023-01-01",
         end="2023-01-02",
         columns=["coal"],
-        resample="hour",
+        resample="1 hour",
         verbose=True,
     )
     assert df.shape[0] == 24
@@ -512,13 +512,9 @@ def test_resample_frequency():
             # always returns interval columns when resampling
             "interval_start_utc",
             "interval_end_utc",
-            "resample_frequency",
             "prc",
         ],
     )
-
-    # assert resample_frequency is 5 minute
-    assert df["resample_frequency"].unique() == ["5 MINUTES"]
 
     # test with time_utc column only, dont need to specify plural
     df = client.get_dataset(
@@ -527,24 +523,21 @@ def test_resample_frequency():
         end="2023-08-02",
         columns=["time_utc", "prc"],
         # dont need to specify plural
-        resample="4 hour",
+        resample="1 hour",
         verbose=True,
     )
 
     _check_dataframe(
         df,
-        length=6,
+        length=24,
         columns=[
             "time_utc",
             # always returns interval columns when resampling
             "interval_start_utc",
             "interval_end_utc",
-            "resample_frequency",
             "prc",
         ],
     )
-
-    assert df["resample_frequency"].unique() == ["4 HOUR"]
 
     # test tz
     df = client.get_dataset(
@@ -566,12 +559,9 @@ def test_resample_frequency():
             # always returns interval columns when resampling
             "interval_start_local",
             "interval_end_local",
-            "resample_frequency",
             "prc",
         ],
     )
-
-    assert df["resample_frequency"].unique() == ["1 HOUR"]
 
 
 def test_resample_by():
@@ -591,19 +581,20 @@ def test_resample_by():
         columns=["interval_start_utc", "interval_end_utc", "to_ba", "from_ba", "mw"],
     )
 
-    # check that time_col is requeired
+    # test inferring time index
+    client.get_dataset(
+        dataset="eia_ba_interchange_hourly",
+        start="Sep 1, 2023",
+        end="Sep 3, 2023",
+        resample="1 day",
+        resample_by=["to_ba", "from_ba"],
+    )
 
-    with pytest.raises(Exception) as e:
-        client.get_dataset(
-            dataset="eia_ba_interchange_hourly",
-            start="Sep 1, 2023",
-            end="Sep 3, 2023",
-            resample="1 day",
-            resample_by=["to_ba", "from_ba"],
-        )
-
-    assert "resample_by must include the time column: interval_start_utc." in str(
-        e.value,
+    _check_dataframe(
+        df,
+        # number of pairs times number of days
+        length=df[["to_ba", "from_ba"]].drop_duplicates().shape[0] * 2,
+        columns=["interval_start_utc", "interval_end_utc", "to_ba", "from_ba", "mw"],
     )
 
 
@@ -710,11 +701,59 @@ def test_cursor_pagination_equals_offset_pagination():
     assert cursor.equals(offset)
 
 
+def test_cursor_pagination_equals_offset_pagination_with_resampling():
+    common_args = {
+        "dataset": "ercot_fuel_mix",
+        "start": "2023-01-01",
+        "end": "2023-01-02",
+        "limit": 50,
+        "page_size": 10,
+        "resample": "1 minute",
+    }
+
+    cursor = client.get_dataset(
+        **common_args,
+        use_cursor_pagination=True,
+    )
+
+    offset = client.get_dataset(
+        **common_args,
+        use_cursor_pagination=False,
+    )
+
+    assert cursor.equals(offset)
+
+
+def test_cursor_pagination_equals_offset_pagination_with_resampling_and_filter():
+    common_args = {
+        "dataset": "spp_lmp_day_ahead_hourly",
+        "start": "2023-01-01",
+        "end": "2023-02-01",
+        "limit": 30_000,
+        "page_size": 10_000,
+        "resample": "1 minute",
+        "filter_column": "location",
+        "filter_value": "AEC",
+    }
+
+    cursor = client.get_dataset(
+        **common_args,
+        use_cursor_pagination=True,
+    )
+
+    offset = client.get_dataset(
+        **common_args,
+        use_cursor_pagination=False,
+    )
+
+    assert cursor.equals(offset)
+
+
 def test_publish_time_latest():
     today = pd.Timestamp.now(tz="UTC").floor("D")
 
     df = client.get_dataset(
-        dataset="ercot_hourly_resource_outage_capacity_reports",
+        dataset="miso_wind_forecast_hourly",
         start=today - pd.Timedelta(days=2),
         end=today,
         publish_time="latest",
@@ -733,7 +772,7 @@ def test_publish_time_and_resample():
     # because no publish time is provided
     # this is resampled by unique publish time
     df = client.get_dataset(
-        dataset="ercot_hourly_resource_outage_capacity_reports",
+        dataset="miso_wind_forecast_hourly",
         start=today - pd.Timedelta(days=2),
         end=today,
         resample="1 day",
@@ -743,21 +782,20 @@ def test_publish_time_and_resample():
 
     # make sure it still works if a column is provided
     df = client.get_dataset(
-        dataset="ercot_hourly_resource_outage_capacity_reports",
+        dataset="miso_wind_forecast_hourly",
         start=today - pd.Timedelta(days=2),
         end=today,
-        columns=["total_resource_mw_zone_south"],
+        columns=["miso"],
         resample="1 day",
         verbose=True,
     )
     assert df["publish_time_utc"].nunique() > 1, "Expected multiple publish times"
 
-    # because of resampling and provided publish time option
-    # there is no longer a single publish time value for each row
-    # so it should be removed
+    # test latest
     df = client.get_dataset(
-        dataset="ercot_hourly_resource_outage_capacity_reports",
+        dataset="miso_wind_forecast_hourly",
         start=today - pd.Timedelta(days=2),
+        columns=["miso"],
         end=today,
         publish_time="latest",
         resample="1 day",
@@ -770,11 +808,11 @@ def test_publish_time_and_resample():
 
     # make sure it still works if a column is provided
     df = client.get_dataset(
-        dataset="ercot_hourly_resource_outage_capacity_reports",
+        dataset="miso_wind_forecast_hourly",
         start=today - pd.Timedelta(days=2),
         end=today,
         publish_time="latest",
-        columns=["total_resource_mw_zone_south"],
+        columns=["miso"],
         resample="1 day",
         verbose=True,
     )
@@ -786,7 +824,7 @@ def test_publish_time_and_resample():
 
 def test_publish_time_latest_report():
     df = client.get_dataset(
-        dataset="ercot_hourly_resource_outage_capacity_reports",
+        dataset="miso_wind_forecast_hourly",
         publish_time="latest_report",
         verbose=True,
     )
@@ -801,7 +839,7 @@ def test_publish_time_specific_time():
     publish_time = "2023-10-04 04:02:52+00:00"
 
     df = client.get_dataset(
-        dataset="ercot_hourly_resource_outage_capacity_reports",
+        dataset="miso_wind_forecast_hourly",
         publish_time=publish_time,
         verbose=True,
     )
@@ -876,3 +914,115 @@ def test_reports_api(iso, market_date, expected_date):
     assert isinstance(resp, dict)
     assert resp["ISO"] == iso.upper()
     assert resp["market_date"] == expected_date
+
+
+# Tests resample with a market day data frequency dataset
+def test_market_day_data_downsampling():
+    df = client.get_dataset(
+        "pjm_outages_daily",
+        start="2024-01-01",
+        end="2024-05-01",
+        resample="1 month",
+        verbose=True,
+    )
+
+    _check_dataframe(df)
+
+    assert df["interval_start_utc"].min() == pd.Timestamp("2024-01-01", tz="UTC")
+    assert df["interval_end_utc"].max() == pd.Timestamp("2024-05-01", tz="UTC")
+
+    # There should be exactly 1 row for each combination of month, region,
+    #  and publish time
+    assert (
+        df.groupby([df["interval_start_utc"].dt.month, "region", "publish_time_utc"])
+        .size()
+        .max()
+        == 1
+    )
+
+
+def test_market_day_data_upsampling():
+    df = client.get_dataset(
+        "pjm_outages_daily",
+        start="2024-01-01",
+        end="2024-01-05",
+        resample="1 hour",
+        verbose=True,
+    )
+
+    _check_dataframe(df)
+
+    assert df["interval_start_utc"].min() == pd.Timestamp(
+        "2024-01-01 00:00:00",
+        tz="UTC",
+    )
+
+    assert df["interval_end_utc"].max() == pd.Timestamp("2024-01-05 00:00:00", tz="UTC")
+
+    # There should be exactly 1 rows for each combination of date, hour, region, and
+    # publish time
+    assert (
+        df.groupby(
+            [
+                df["interval_start_utc"].dt.date,
+                df["interval_start_utc"].dt.hour,
+                "region",
+                "publish_time_utc",
+            ],
+        )
+        .size()
+        .max()
+        == 1
+    )
+
+
+# Tests resampling to a market day frequency
+def test_market_frequency_resampling():
+    common_args = {
+        "start": "2024-01-01 12:00:00",
+        "end": "2024-05-01",
+        "verbose": True,
+    }
+
+    df = client.get_dataset(
+        "pjm_load",
+        resample="1 day market",
+        **common_args,
+    )
+
+    _check_dataframe(df)
+
+    # Starts on market day start (in UTC)
+    assert df["interval_start_utc"].min() == pd.Timestamp("2024-01-01 05:00:00+00:00")
+    # Ends on market day end (in UTC)
+    assert df["interval_end_utc"].max() == pd.Timestamp("2024-05-01 04:00:00+00:00")
+
+    # There should be exactly 1 row for each day
+    assert df["interval_start_utc"].dt.date.value_counts().max() == 1
+
+    # Compare to resampling to 1 day to make sure they are different
+    df_day = client.get_dataset(
+        "pjm_load",
+        resample="1 day",
+        **common_args,
+    )
+
+    # Should have the same number of rows
+    assert len(df) == len(df_day)
+
+    # Should have different start and end times
+    assert df["interval_start_utc"].min() != df_day["interval_start_utc"].min()
+    assert df["interval_end_utc"].max() != df_day["interval_end_utc"].max()
+
+    # Should have different values
+    assert not df["load"].equals(df_day["load"])
+
+
+def test_invalid_resampling_frequency():
+    with pytest.raises(Exception):
+        client.get_dataset(
+            "pjm_load",
+            resample="1 hour market",
+            start="2024-01-01",
+            end="2024-01-02",
+        )
