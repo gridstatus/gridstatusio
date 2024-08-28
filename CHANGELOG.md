@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.0 - August 28, 2024
+
+- Updates for resampling changes on server. Upsampling is now supported.
+
 ## 0.6.5 - August 6, 2024
 
 - Remove `gridstatus` and add `tabulate` as dependencies.
