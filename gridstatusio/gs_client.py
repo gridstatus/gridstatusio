@@ -10,6 +10,8 @@ from termcolor import colored
 
 from gridstatusio import __version__, utils
 
+MAX_RETRIES = 3
+
 
 def log(msg, verbose, level="info", end="\n"):
     """Print a message if verbose matches the level"""
@@ -90,10 +92,31 @@ class GridStatusClient:
         log(f"\nGET {url}", verbose=verbose, level="debug")
         log(f"Params: {params}", verbose=verbose, level="debug")
 
-        response = requests.get(url, params=params, headers=headers)
+        retries = 0
+        initial_delay = 1
+        while retries <= MAX_RETRIES:
+            response = requests.get(url, params=params, headers=headers)
+            if response.status_code == 200:
+                break
 
-        if response.status_code != 200:
-            raise Exception(f"Error {response.status_code}: {response.text}")
+            if response.status_code == 429:
+                if retries < MAX_RETRIES:
+                    # Exponential backoff delay  of 1 sec, 2 sec, 4 sec...
+                    delay = initial_delay * 2**retries
+                    retries += 1
+                    log(
+                        (
+                            f"API rate limit hit. Retrying again in {delay} seconds. "
+                            f"Retry {retries} of {MAX_RETRIES}."
+                        ),
+                        verbose=verbose,
+                        level="info",
+                    )
+                    time.sleep(delay)
+                else:
+                    raise Exception("Exceeded maximum number of retries")
+            elif response.status_code != 200:
+                raise Exception(f"Error {response.status_code}: {response.text}")
 
         if return_raw_response_json:
             return response.json()

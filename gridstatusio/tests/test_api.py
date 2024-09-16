@@ -1,10 +1,12 @@
 import os
 from datetime import datetime
+from unittest.mock import patch
 
 import pandas as pd
 import pytest
 
 import gridstatusio as gs
+from gridstatusio.gs_client import MAX_RETRIES
 from gridstatusio.version import version_is_higher
 
 client = gs.GridStatusClient(
@@ -1026,3 +1028,23 @@ def test_invalid_resampling_frequency():
             start="2024-01-01",
             end="2024-01-02",
         )
+
+
+@patch("requests.get")
+def test_rate_limit_hit_backoff(mock_get_request, capsys):
+    mock_get_request.return_value.status_code = 429
+    with pytest.raises(Exception, match="Exceeded maximum number of retries"):
+        client.get_dataset(
+            "pjm_load",
+            start="2024-01-01",
+            end="2024-01-02",
+        )
+
+    output_text = capsys.readouterr().out
+    for i in range(0, MAX_RETRIES):
+        expected_text = (
+            f"API rate limit hit. "
+            f"Retrying again in {1 * 2 ** i} seconds. "
+            f"Retry {i+1} of {MAX_RETRIES}."
+        )
+        assert expected_text in output_text
