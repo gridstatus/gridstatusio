@@ -6,7 +6,6 @@ import pandas as pd
 import pytest
 
 import gridstatusio as gs
-from gridstatusio.gs_client import MAX_RETRIES
 from gridstatusio.version import version_is_higher
 
 client = gs.GridStatusClient(
@@ -1041,10 +1040,10 @@ def test_rate_limit_hit_backoff(mock_get_request, capsys):
         )
 
     output_text = capsys.readouterr().out
-    for i in range(0, MAX_RETRIES):
+    for i in range(0, client.max_retries):
         expected_text = (
             f"API rate limit hit. "
             f"Retrying again in {1 * 2 ** i} seconds. "
-            f"Retry {i+1} of {MAX_RETRIES}."
+            f"Retry {i+1} of {client.max_retries}."
         )
         assert expected_text in output_text
