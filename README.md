@@ -34,8 +34,7 @@ python -m pip install --upgrade gridstatusio
 * Set your API key as an environment variable: `export GRIDSTATUS_API_KEY=your_api_key`
 * **NOTE**: the Grid Status API has a 1 million rows per month limit on the free plan. This limit is _very_ easy to exceed when querying data, especially real time prices.
   * Make sure to add `limit` to all of your `get_dataset` calls to avoid quickly exceeding the limit.
-* The Grid Status API has rate limits that restrict the number of
-requests that are allowed each second, minute and hour. If rate limits are hit the client will automatically retry the request after a delay. You can configure the maximum number of retries using the `max_retries` parameter when initializing the client. If you find yourself hitting rate limits, you may need to add a delay between your requests.
+* The Grid Status API has rate limits that restrict the number of requests that are allowed each second, minute and hour. If rate limits are hit the client will automatically retry the request after a delay. You can configure the maximum number of retries using the `max_retries` parameter when initializing the client. If you find yourself hitting rate limits, you may need to add a delay between your requests.
 
 Check out this example notebook: [Getting Started](/Examples/Getting%20Started.ipynb)
 
