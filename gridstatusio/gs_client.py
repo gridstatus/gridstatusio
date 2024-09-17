@@ -29,6 +29,7 @@ class GridStatusClient:
         api_key=None,
         host="https://api.gridstatus.io/v1",
         request_format="json",
+        max_retries=3,
     ):
         """Create a GridStatus.io API client
 
@@ -41,6 +42,9 @@ class GridStatusClient:
 
             request_format (str): The format to use for requests. Options are "json"
                 or "csv". Defaults to "json".
+
+            max_retries (int): The maximum number of retries to attempt if an API rate
+                limit is hit when requesting data. Defaults to 3.
         """
 
         if api_key is None:
@@ -58,6 +62,7 @@ class GridStatusClient:
         self.api_key = api_key
         self.host = host
         self.request_format = request_format
+        self.max_retries = max_retries
 
         assert self.request_format in [
             "json",
@@ -90,10 +95,29 @@ class GridStatusClient:
         log(f"\nGET {url}", verbose=verbose, level="debug")
         log(f"Params: {params}", verbose=verbose, level="debug")
 
-        response = requests.get(url, params=params, headers=headers)
-
-        if response.status_code != 200:
-            raise Exception(f"Error {response.status_code}: {response.text}")
+        retries = 0
+        initial_delay = 1
+        while retries <= self.max_retries:
+            response = requests.get(url, params=params, headers=headers)
+            if response.status_code == 200:
+                break
+            elif (response.status_code == 429) and (retries == self.max_retries):
+                raise Exception("Exceeded maximum number of retries")
+            elif response.status_code == 429:
+                # Exponential backoff delay of 1 sec, 2 sec, 4 sec...
+                delay = initial_delay * 2**retries
+                retries += 1
+                log(
+                    (
+                        f"API rate limit hit. Retrying again in {delay} seconds. "
+                        f"Retry {retries} of {self.max_retries}."
+                    ),
+                    verbose=verbose,
+                    level="info",
+                )
+                time.sleep(delay)
+            else:
+                raise Exception(f"Error {response.status_code}: {response.text}")
 
         if return_raw_response_json:
             return response.json()
@@ -210,6 +234,7 @@ class GridStatusClient:
         tz=None,
         verbose=True,
         use_cursor_pagination=True,
+        sleep_time=0,
     ):
         """Get a dataset from GridStatus.io API
 
@@ -272,6 +297,10 @@ class GridStatusClient:
                 the server side to fetch data. Defaults to False. When False, the
                 server will use page-based pagination which is generally slower
                 for large datasets.
+
+            sleep_time (int): The amount of time, in seconds, to wait between requests
+                when requesting multiple pages of data. Can be used to slow request
+                frequency to help avoid hitting API rate limits. Defaults to 0.
 
         Returns:
             pd.DataFrame: The dataset as a pandas dataframe
@@ -368,6 +397,7 @@ class GridStatusClient:
                 log(f"Total rows: {total_rows:,}/{limit:,} ({pct}% of limit)", verbose)
 
             page += 1
+            time.sleep(sleep_time)
 
         log("", verbose=verbose)  # Add a newline for cleaner output
 
