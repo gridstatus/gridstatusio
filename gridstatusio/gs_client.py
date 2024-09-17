@@ -44,7 +44,7 @@ class GridStatusClient:
                 or "csv". Defaults to "json".
 
             max_retries (int): The maximum number of retries to attempt if an API rate
-                limit is hit when requesting data.
+                limit is hit when requesting data. Defaults to 3.
         """
 
         if api_key is None:
@@ -300,7 +300,7 @@ class GridStatusClient:
 
             sleep_time (int): The amount of time, in seconds, to wait between requests
                 when requesting multiple pages of data. Can be used to slow request
-                frequency to help avoid hitting API rate limits. Default to 0.
+                frequency to help avoid hitting API rate limits. Defaults to 0.
 
         Returns:
             pd.DataFrame: The dataset as a pandas dataframe
