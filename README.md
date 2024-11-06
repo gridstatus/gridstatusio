@@ -40,6 +40,7 @@ Check out this example notebook: [Getting Started](/Examples/Getting%20Started.i
 
 Other Examples:
 
+- [ERCOT Pricing Data](/Examples/ERCOT%20Pricing%20Data.ipynb)
 - [Stacked Net Load Visualization](/Examples/Stacked%20Net%20Load%20Visualization.ipynb)
 - [CAISO April Net Load Analysis](/Examples/CAISO%20April%20Net%20Load.ipynb)
 - [Resample Data to Different Frequencies](/Examples/Resample%20Data.ipynb)
