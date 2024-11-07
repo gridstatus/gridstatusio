@@ -1034,7 +1034,7 @@ def test_rate_limit_hit_backoff(mock_get_request, capsys):
     mock_get_request.return_value.status_code = 429
     with pytest.raises(
         Exception,
-        match="Rate Limited. Exceeded maximum number of retries",
+        match="Rate limited. Exceeded maximum number of retries",
     ):
         client.get_dataset(
             "pjm_load",
