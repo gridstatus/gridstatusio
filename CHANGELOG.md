@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.0 - September 25, 2024
+
+- Adds automatic retries using an exponential backoff when fetching data if an API rate limit is hit. Also adds parameters for configuring `max_retries` on `GridStatusClient` and an optional `sleep_time` parameter on `GridStatusClient.get_dataset`.
+
 ## 0.7.0 - August 28, 2024
 
 - Updates for resampling changes on server. Upsampling is now supported.
