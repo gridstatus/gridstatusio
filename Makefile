@@ -6,7 +6,7 @@ clean:
 	find . -name '*~' -delete
 	find . -name '.coverage.*' -delete
 
-PYTEST_CMD := poetry run pytest -s -vv gridstatusio/ -n auto
+PYTEST_CMD := poetry run pytest -s -vv gridstatusio/ -n 2
 NOT_SLOW := -m "not slow"
 
 .PHONY: test
