@@ -102,7 +102,7 @@ class GridStatusClient:
             if response.status_code == 200:
                 break
             elif (response.status_code == 429) and (retries == self.max_retries):
-                raise Exception("Exceeded maximum number of retries")
+                raise Exception("Rate limited. Exceeded maximum number of retries")
             elif response.status_code == 429:
                 # Exponential backoff delay of 1 sec, 2 sec, 4 sec...
                 delay = initial_delay * 2**retries

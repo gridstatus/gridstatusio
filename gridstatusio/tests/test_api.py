@@ -1032,7 +1032,10 @@ def test_invalid_resampling_frequency():
 @patch("requests.get")
 def test_rate_limit_hit_backoff(mock_get_request, capsys):
     mock_get_request.return_value.status_code = 429
-    with pytest.raises(Exception, match="Exceeded maximum number of retries"):
+    with pytest.raises(
+        Exception,
+        match="Rate Limited. Exceeded maximum number of retries",
+    ):
         client.get_dataset(
             "pjm_load",
             start="2024-01-01",

@@ -6,12 +6,17 @@ clean:
 	find . -name '*~' -delete
 	find . -name '.coverage.*' -delete
 
-PYTEST_CMD := poetry run pytest -s -vv gridstatusio/ -n 2
+PYTEST_CMD := poetry run pytest -s -vv gridstatusio/
 NOT_SLOW := -m "not slow"
 
 .PHONY: test
 test:
 	$(PYTEST_CMD) $(NOT_SLOW) --reruns 5 --reruns-delay 3
+
+# Running tests in parallel will generally result in rate limiting from the API
+.PHONY: test-parallel
+test-parallel:
+	$(PYTEST_CMD) $(NOT_SLOW) -n auto
 
 .PHONY: test-slow
 test-slow:
