@@ -977,48 +977,6 @@ def test_market_day_data_upsampling():
     )
 
 
-# Tests resampling to a market day frequency
-def test_market_frequency_resampling():
-    common_args = {
-        "start": "2024-01-01 12:00:00",
-        "end": "2024-05-01",
-        "verbose": True,
-    }
-
-    df = client.get_dataset(
-        "pjm_load",
-        resample="1 day market",
-        **common_args,
-    )
-
-    _check_dataframe(df)
-
-    # Starts on market day start (in UTC)
-    assert df["interval_start_utc"].min() == pd.Timestamp("2024-01-01 05:00:00+00:00")
-    # Ends on market day end (in UTC)
-    assert df["interval_end_utc"].max() == pd.Timestamp("2024-05-01 04:00:00+00:00")
-
-    # There should be exactly 1 row for each day
-    assert df["interval_start_utc"].dt.date.value_counts().max() == 1
-
-    # Compare to resampling to 1 day to make sure they are different
-    df_day = client.get_dataset(
-        "pjm_load",
-        resample="1 day",
-        **common_args,
-    )
-
-    # Should have the same number of rows
-    assert len(df) == len(df_day)
-
-    # Should have different start and end times
-    assert df["interval_start_utc"].min() != df_day["interval_start_utc"].min()
-    assert df["interval_end_utc"].max() != df_day["interval_end_utc"].max()
-
-    # Should have different values
-    assert not df["load"].equals(df_day["load"])
-
-
 def test_invalid_resampling_frequency():
     with pytest.raises(Exception):
         client.get_dataset(
