@@ -182,20 +182,18 @@ class GridStatusClient:
                         ],
                     ]
 
-                    dataset_metadata = dataset.get("dataset_metadata", {})
-                    num_rows = dataset_metadata.get("num_rows")
-                    available_cols = [
-                        col["name"]
-                        for col in dataset_metadata.get("available_cols", [])
+                    num_rows = dataset.get("num_rows")
+                    all_columns = [
+                        col["name"] for col in dataset.get("all_columns", [])
                     ]
 
                     if num_rows is not None:
                         dataset_table.append(
                             ["Number of rows", colored(num_rows, "red")],
                         )
-                    if available_cols:
+                    if all_columns:
                         dataset_table.append(
-                            ["Available columns", ", ".join(available_cols)],
+                            ["Available columns", ", ".join(all_columns)],
                         )
                     else:
                         dataset_table.append(
