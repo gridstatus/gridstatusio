@@ -702,13 +702,13 @@ def test_cursor_pagination_equals_offset_pagination():
     assert cursor.equals(offset)
 
 
-def test_cursor_pagination_equals_offset_pagination_with_resampling():
+def test_cursor_pagination_equals_offset_pagination_with_upsampling():
     common_args = {
         "dataset": "ercot_fuel_mix",
         "start": "2023-01-01",
         "end": "2023-01-02",
-        "limit": 50,
-        "page_size": 10,
+        "limit": 24,
+        "page_size": 6,
         "resample": "1 minute",
     }
 
@@ -725,14 +725,62 @@ def test_cursor_pagination_equals_offset_pagination_with_resampling():
     assert cursor.equals(offset)
 
 
-def test_cursor_pagination_equals_offset_pagination_with_resampling_and_filter():
+def test_cursor_pagination_equals_offset_pagination_with_downsampling():
+    common_args = {
+        "dataset": "ercot_fuel_mix",
+        "start": "2023-01-01",
+        "end": "2023-01-02",
+        "limit": 24,
+        "page_size": 6,
+        "resample": "1 hour",
+    }
+
+    cursor = client.get_dataset(
+        **common_args,
+        use_cursor_pagination=True,
+    )
+
+    offset = client.get_dataset(
+        **common_args,
+        use_cursor_pagination=False,
+    )
+
+    assert cursor.equals(offset)
+
+
+def test_cursor_pagination_equals_offset_pagination_with_upsampling_and_filter():
     common_args = {
         "dataset": "spp_lmp_day_ahead_hourly",
         "start": "2023-01-01",
         "end": "2023-02-01",
-        "limit": 30_000,
-        "page_size": 10_000,
+        "limit": 3_000,
+        "page_size": 1_000,
         "resample": "1 minute",
+        "filter_column": "location",
+        "filter_value": "AEC",
+    }
+
+    cursor = client.get_dataset(
+        **common_args,
+        use_cursor_pagination=True,
+    )
+
+    offset = client.get_dataset(
+        **common_args,
+        use_cursor_pagination=False,
+    )
+
+    assert cursor.equals(offset)
+
+
+def test_cursor_pagination_equals_offset_pagination_with_downsampling_and_filter():
+    common_args = {
+        "dataset": "spp_lmp_day_ahead_hourly",
+        "start": "2023-01-01",
+        "end": "2023-02-01",
+        "limit": 100,
+        "page_size": 25,
+        "resample": "1 day",
         "filter_column": "location",
         "filter_value": "AEC",
     }
