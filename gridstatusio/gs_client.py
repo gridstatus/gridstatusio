@@ -1,5 +1,6 @@
 import io
 import time
+import warnings
 from datetime import datetime
 from typing import Dict, Union
 
@@ -311,9 +312,10 @@ class GridStatusClient:
             pd.DataFrame: The dataset as a pandas dataframe
         """
         if tz:
-            log(
+            warnings.warn(
                 "The 'tz' parameter is deprecated. Please use 'timezone' instead.",
-                True,
+                DeprecationWarning,
+                stacklevel=2,
             )
             if timezone:
                 raise ValueError("'tz' and 'timezone' parameters cannot both be set.")
