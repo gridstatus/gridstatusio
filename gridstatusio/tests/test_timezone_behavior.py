@@ -86,3 +86,35 @@ class TestTimezoneBehavior:
 
         assert str(df["interval_start_utc"].min()) == "2024-12-01 00:00:00+00:00"
         assert str(df["interval_end_utc"].max()) == "2024-12-01 01:00:00+00:00"
+
+    def test_timezone_on_dst_start(self):
+        self.start = "2024-03-10T08:00:00Z"
+        self.end = "2024-03-10T12:00:00Z"
+
+        df = client.get_dataset(
+            self.dataset,
+            start=self.start,
+            end=self.end,
+            timezone=self.timezone,
+            columns=self.columns,
+        )
+
+        # First offset should be 8 hours, then 7 hours after DST starts
+        assert str(df["interval_start_local"].min()) == "2024-03-10 00:00:00-08:00"
+        assert str(df["interval_end_local"].max()) == "2024-03-10 05:00:00-07:00"
+
+    def test_timezone_on_dst_end(self):
+        self.start = "2024-11-03T08:00:00Z"
+        self.end = "2024-11-03T12:00:00Z"
+
+        df = client.get_dataset(
+            self.dataset,
+            start=self.start,
+            end=self.end,
+            timezone=self.timezone,
+            columns=self.columns,
+        )
+
+        # First offset should be 7 hours, then 8 hours after DST ends
+        assert str(df["interval_start_local"].min()) == "2024-11-03 01:00:00-07:00"
+        assert str(df["interval_end_local"].max()) == "2024-11-03 04:00:00-08:00"
