@@ -230,6 +230,7 @@ class GridStatusClient:
         limit=None,
         page_size=None,
         tz=None,
+        timezone=None,
         verbose=True,
         use_cursor_pagination=True,
         sleep_time=0,
@@ -285,7 +286,13 @@ class GridStatusClient:
             page_size (int): The maximum number of rows to fetch per page.
                 Defaults to None, which uses maximum allowed by subscription.
 
-            tz (str): The timezone to convert utc timestamps to. Defaults to UTC.
+            tz (str): DEPRECATED: please use 'timezone' parameter instead.
+                The timezone to convert utc timestamps to.
+
+            timezone (str): "The timezone to use when resampling to frequencies one day
+                or above, and returning results. When provided, the returned data will
+                have both UTC and local time columns. If not provided, the returned data
+                will have only UTC time columns. Defaults to None.
 
             verbose (bool): If set to True or "info", prints additional information.
                 If set to "debug", prints more additional debug information. If
@@ -303,8 +310,13 @@ class GridStatusClient:
         Returns:
             pd.DataFrame: The dataset as a pandas dataframe
         """
-        if tz is None:
-            tz = "UTC"
+        if tz:
+            log(
+                "The 'tz' parameter is deprecated. Please use 'timezone' instead.",
+                True,
+            )
+            if timezone:
+                raise ValueError("'tz' and 'timezone' parameters cannot both be set.")
 
         if start is not None:
             start = utils.handle_date(start, tz)
@@ -341,6 +353,7 @@ class GridStatusClient:
                 ),
                 "resample_function": resample_function if resample else None,
                 "publish_time": publish_time,
+                "timezone": timezone,
             }
 
             # Setting the cursor value in the parameters tells the server to use
@@ -425,8 +438,13 @@ class GridStatusClient:
             ):
                 df[col_name] = pd.to_datetime(df[col_name], utc=True)
 
-                if tz != "UTC":
-                    df[col_name] = df[col_name].dt.tz_convert(tz)
+                # TODO: remove old behavior
+                # If timezone is provided, returned data will have both local columns
+                # and _utc columns. We will leave the _utc columns as is.
+                if (tz and tz != "UTC") or (
+                    timezone and timezone != "UTC" and not col_name.endswith("_utc")
+                ):
+                    df[col_name] = df[col_name].dt.tz_convert(timezone or tz)
                     # rename with _local suffix
                     df = df.rename(
                         columns={col_name: col_name.replace("_utc", "") + "_local"},
