@@ -509,7 +509,6 @@ def test_resample_frequency():
         df,
         length=288,
         columns=[
-            "time_utc",
             # always returns interval columns when resampling
             "interval_start_utc",
             "interval_end_utc",
