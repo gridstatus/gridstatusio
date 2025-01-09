@@ -554,7 +554,6 @@ def test_resample_frequency():
         df,
         length=24,
         columns=[
-            "time_local",
             # always returns interval columns when resampling
             "interval_start_local",
             "interval_end_local",
