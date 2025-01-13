@@ -447,10 +447,6 @@ class GridStatusClient:
                     timezone and timezone != "UTC" and not col_name.endswith("_utc")
                 ):
                     df[col_name] = df[col_name].dt.tz_convert(timezone or tz)
-                    # rename with _local suffix
-                    df = df.rename(
-                        columns={col_name: col_name.replace("_utc", "") + "_local"},
-                    )
 
         return df
 
