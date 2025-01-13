@@ -290,8 +290,8 @@ class GridStatusClient:
             tz (str): DEPRECATED: please use 'timezone' parameter instead.
                 The timezone to convert utc timestamps to.
 
-            timezone (str): "The timezone to use when resampling to frequencies one day
-                or above, and returning results. When provided, the returned data will
+            timezone (str): The timezone to use for returning results and resampling to
+                frequencies one day or lower. When provided, the returned data will
                 have both UTC and local time columns. If not provided, the returned data
                 will have only UTC time columns. Defaults to None.
 
