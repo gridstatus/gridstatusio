@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.9.0 - Upcoming
+## 0.9.0 - January 22, 2025
 
 - Adds a `timezone` parameter used for returning results in local time and resampling results to frequencies one day or lower
   - With this addition, the `tz` parameter is deprecated and will be removed in a future release
