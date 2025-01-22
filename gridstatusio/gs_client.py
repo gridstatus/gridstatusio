@@ -448,6 +448,11 @@ class GridStatusClient:
                 ):
                     df[col_name] = df[col_name].dt.tz_convert(timezone or tz)
 
+                    if tz:
+                        df = df.rename(
+                            columns={col_name: col_name.replace("_utc", "") + "_local"},
+                        )
+
         return df
 
     def get_daily_peak_report(

@@ -4,6 +4,46 @@
 
 - Adds a `timezone` parameter used for returning results in local time and resampling results to frequencies one day or lower
   - With this addition, the `tz` parameter is deprecated and will be removed in a future release
+  - When using the `timezone` parameter, the `_local` columns will be in the timezone and `_utc` columns will be in UTC
+
+__With `tz` (deprecated)__:
+
+```python
+client.get_dataset(
+    dataset='ercot_load',
+    start=start,
+    end=end,
+    tz='America/New_York'
+)
+```
+
+Total number of rows: 288
+|    | interval_start_local      | interval_end_local        |   load |
+|---:|:--------------------------|:--------------------------|-------:|
+|  0 | 2025-01-01 00:00:00-05:00 | 2025-01-01 00:05:00-05:00 |  44859 |
+|  1 | 2025-01-01 00:05:00-05:00 | 2025-01-01 00:10:00-05:00 |  44993 |
+|  2 | 2025-01-01 00:10:00-05:00 | 2025-01-01 00:15:00-05:00 |  44894 |
+|  3 | 2025-01-01 00:15:00-05:00 | 2025-01-01 00:20:00-05:00 |  44863 |
+|  4 | 2025-01-01 00:20:00-05:00 | 2025-01-01 00:25:00-05:00 |  44845 |
+
+__With `timezone`__:
+
+```python
+client.get_dataset(
+    dataset='ercot_load',
+    start=start,
+    end=end,
+    timezone='America/New_York'
+)
+```
+
+|    | interval_start_local      | interval_start_utc        | interval_end_local        | interval_end_utc          |   load |
+|---:|:--------------------------|:--------------------------|:--------------------------|:--------------------------|-------:|
+|  0 | 2025-01-01 00:00:00-05:00 | 2025-01-01 05:00:00+00:00 | 2025-01-01 00:05:00-05:00 | 2025-01-01 05:05:00+00:00 |  44859 |
+|  1 | 2025-01-01 00:05:00-05:00 | 2025-01-01 05:05:00+00:00 | 2025-01-01 00:10:00-05:00 | 2025-01-01 05:10:00+00:00 |  44993 |
+|  2 | 2025-01-01 00:10:00-05:00 | 2025-01-01 05:10:00+00:00 | 2025-01-01 00:15:00-05:00 | 2025-01-01 05:15:00+00:00 |  44894 |
+|  3 | 2025-01-01 00:15:00-05:00 | 2025-01-01 05:15:00+00:00 | 2025-01-01 00:20:00-05:00 | 2025-01-01 05:20:00+00:00 |  44863 |
+|  4 | 2025-01-01 00:20:00-05:00 | 2025-01-01 05:20:00+00:00 | 2025-01-01 00:25:00-05:00 | 2025-01-01 05:25:00+00:00 |  44845 |
 
 ## 0.8.0 - September 25, 2024
 
