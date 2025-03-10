@@ -5,30 +5,35 @@
 - Increases version to get new dataset column namings from API
 - Update to this version if you want to get the new behavior early
 - After YYYY-MM-DD, the new column namings will be the default behavior
-- Changes in datasets
+- Changes in datasets (preliminary)
 
-| table                                            | old_column_name        | new_column_name            |
-|--------------------------------------------------|------------------------|----------------------------|
-| caiso_curtailed_non_operational_generator_report | curtailment_end_time   | curtailment_end_time_utc   |
-| caiso_curtailed_non_operational_generator_report | curtailment_start_time | curtailment_start_time_utc |
-| ercot_indicative_lmp_by_settlement_point         | rtd_timestamp          | rtd_timestamp_utc          |
-| ercot_lmp_by_bus                                 | sced_timestamp         | sced_timestamp_utc         |
-| ercot_lmp_by_settlement_point                    | sced_timestamp         | sced_timestamp_utc         |
-| ercot_lmp_with_adders_by_settlement_point        | sced_timestamp         | sced_timestamp_utc         |
-| ercot_real_time_adders_and_reserves              | sced_timestamp         | sced_timestamp_utc         |
-| ercot_sced_gen_resource_60_day                   | sced_time_stamp        | sced_timestamp_utc         |
-| ercot_sced_load_resource_60_day                  | sced_time_stamp        | sced_timestamp_utc         |
-| ercot_sced_smne_60_day                           | interval_time          | interval_time_utc          |
-| ercot_sced_system_lambda                         | sced_time_stamp        | sced_timestamp_utc         |
-| ercot_shadow_prices_sced                         | sced_timestamp         | sced_timestamp_utc         |
-| ercot_spp_day_ahead_price_corrections            | price_correction_time  | price_correction_time_utc  |
-| ercot_spp_real_time_price_corrections            | price_correction_time  | price_correction_time_utc  |
-| ercot_unplanned_resource_outages                 | actual_end_date        | actual_end_date_utc        |
-| ercot_unplanned_resource_outages                 | actual_outage_start    | actual_outage_start_utc    |
-| ercot_unplanned_resource_outages                 | current_as_of          | current_as_of_utc          |
-| ercot_unplanned_resource_outages                 | planned_end_date       | planned_end_date_utc       |
-| ieso_adequacy_report_forecast                    | last_modified          | last_modified_utc          |
-| pjm_lmp_it_sced_5_min                            | case_approval_time     | case_approval_time_utc     |
+| table                                            | old_column_name         | new_column_name             |
+|--------------------------------------------------|-------------------------|-----------------------------|
+| caiso_curtailed_non_operational_generator_report | curtailment_end_time    | curtailment_end_time_utc    |
+| caiso_curtailed_non_operational_generator_report | curtailment_start_time  | curtailment_start_time_utc  |
+| datasets                                         | earliest_available_time | earliest_available_time_utc |
+| datasets                                         | last_checked_time       | last_checked_time_utc       |
+| datasets                                         | latest_available_time   | latest_available_time_utc   |
+| datasets                                         | created_at              | created_at_utc              |
+| datasets                                         | updated_at              | updated_at_utc              |
+| ercot_indicative_lmp_by_settlement_point         | rtd_timestamp           | rtd_timestamp_utc           |
+| ercot_lmp_by_bus                                 | sced_timestamp          | sced_timestamp_utc          |
+| ercot_lmp_by_settlement_point                    | sced_timestamp          | sced_timestamp_utc          |
+| ercot_lmp_with_adders_by_settlement_point        | sced_timestamp          | sced_timestamp_utc          |
+| ercot_real_time_adders_and_reserves              | sced_timestamp          | sced_timestamp_utc          |
+| ercot_sced_gen_resource_60_day                   | sced_time_stamp         | sced_timestamp_utc          |
+| ercot_sced_load_resource_60_day                  | sced_time_stamp         | sced_timestamp_utc          |
+| ercot_sced_smne_60_day                           | interval_time           | interval_time_utc           |
+| ercot_sced_system_lambda                         | sced_time_stamp         | sced_timestamp_utc          |
+| ercot_shadow_prices_sced                         | sced_timestamp          | sced_timestamp_utc          |
+| ercot_spp_day_ahead_price_corrections            | price_correction_time   | price_correction_time_utc   |
+| ercot_spp_real_time_price_corrections            | price_correction_time   | price_correction_time_utc   |
+| ercot_unplanned_resource_outages                 | actual_end_date         | actual_end_date_utc         |
+| ercot_unplanned_resource_outages                 | actual_outage_start     | actual_outage_start_utc     |
+| ercot_unplanned_resource_outages                 | current_as_of           | current_as_of_utc           |
+| ercot_unplanned_resource_outages                 | planned_end_date        | planned_end_date_utc        |
+| ieso_adequacy_report_forecast                    | last_modified           | last_modified_utc           |
+| pjm_lmp_it_sced_5_min                            | case_approval_time      | case_approval_time_utc      |
 
 
 ## 0.9.0 - January 22, 2025
