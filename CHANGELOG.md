@@ -1,10 +1,13 @@
 # Changelog
 
-## 0.9.1 - March 11, 2025
+## 0.10.0 - March 11, 2025
 
 - Increases version to get new dataset column namings from API
 - Update to this version if you want to get the new behavior early
 - After YYYY-MM-DD, the new column namings will be the default behavior
+
+### Breaking Changes
+
 - Changes in datasets (preliminary)
 
 | table                                            | old_column_name         | new_column_name             |
