@@ -3,22 +3,18 @@
 ## 0.10.0 - March 11, 2025
 
 - Increases version to get new dataset column namings from API
-- Update to this version if you want to get the new behavior early
-- After YYYY-MM-DD, the new column namings will be the default behavior
+- Update to this version if you want to get the new column names early
+- After 2025-03-36T15:00:00Z, the new column namings will be the default behavior
+- See the [docs changelog](https://docs.gridstatus.io/changelog/march-2025/11-march-add-_utc-suffix-to-dataset-columns-where-it-is-missing) for more information
 
 ### Breaking Changes
 
-- Changes in datasets (preliminary)
+- Changes in datasets
 
 | table                                            | old_column_name         | new_column_name             |
 |--------------------------------------------------|-------------------------|-----------------------------|
 | caiso_curtailed_non_operational_generator_report | curtailment_end_time    | curtailment_end_time_utc    |
 | caiso_curtailed_non_operational_generator_report | curtailment_start_time  | curtailment_start_time_utc  |
-| datasets                                         | earliest_available_time | earliest_available_time_utc |
-| datasets                                         | last_checked_time       | last_checked_time_utc       |
-| datasets                                         | latest_available_time   | latest_available_time_utc   |
-| datasets                                         | created_at              | created_at_utc              |
-| datasets                                         | updated_at              | updated_at_utc              |
 | ercot_indicative_lmp_by_settlement_point         | rtd_timestamp           | rtd_timestamp_utc           |
 | ercot_lmp_by_bus                                 | sced_timestamp          | sced_timestamp_utc          |
 | ercot_lmp_by_settlement_point                    | sced_timestamp          | sced_timestamp_utc          |
@@ -37,6 +33,16 @@
 | ercot_unplanned_resource_outages                 | planned_end_date        | planned_end_date_utc        |
 | ieso_adequacy_report_forecast                    | last_modified           | last_modified_utc           |
 | pjm_lmp_it_sced_5_min                            | case_approval_time      | case_approval_time_utc      |
+
+- Dataset metadata changes
+
+| old_column_name         | new_column_name             |
+|-------------------------|-----------------------------|
+| earliest_available_time | earliest_available_time_utc |
+| last_checked_time       | last_checked_time_utc       |
+| latest_available_time   | latest_available_time_utc   |
+| created_at              | created_at_utc              |
+| updated_at              | updated_at_utc              |
 
 
 ## 0.9.0 - January 22, 2025
