@@ -174,12 +174,12 @@ class GridStatusClient:
                         ["ID", colored(dataset["id"], "yellow")],
                         ["Description", colored(dataset_description, "green")],
                         [
-                            "Earliest available time",
-                            colored(dataset["earliest_available_time"], "blue"),
+                            "Earliest available time (UTC)",
+                            colored(dataset["earliest_available_time_utc"], "blue"),
                         ],
                         [
-                            "Latest available time",
-                            colored(dataset["latest_available_time"], "blue"),
+                            "Latest available time (UTC)",
+                            colored(dataset["latest_available_time_utc"], "blue"),
                         ],
                     ]
 
