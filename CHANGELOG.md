@@ -41,8 +41,6 @@
 | earliest_available_time | earliest_available_time_utc |
 | last_checked_time       | last_checked_time_utc       |
 | latest_available_time   | latest_available_time_utc   |
-| created_at              | created_at_utc              |
-| updated_at              | updated_at_utc              |
 
 
 ## 0.9.0 - January 22, 2025
