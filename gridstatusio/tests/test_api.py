@@ -82,7 +82,6 @@ def test_handles_unknown_columns():
         client.get_dataset(
             dataset=dataset,
             columns=["invalid_column"],
-            resample="1 hour",
             verbose=True,
         )
 
