@@ -11,7 +11,7 @@
 
 - Changes in datasets
 
-| table                                            | old_column_name         | new_column_name             |
+| dataset_id                                       | old_column_name         | new_column_name             |
 |--------------------------------------------------|-------------------------|-----------------------------|
 | caiso_curtailed_non_operational_generator_report | curtailment_end_time    | curtailment_end_time_utc    |
 | caiso_curtailed_non_operational_generator_report | curtailment_start_time  | curtailment_start_time_utc  |
