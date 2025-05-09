@@ -1,8 +1,16 @@
-[tool.poetry]
+[project]
 name = "gridstatusio"
 version = "0.10.0"
-readme = "README.md"
 description = "Python Client for GridStatus.io API"
+authors = [{ name = "Max Kanter", email = "kmax12@gmail.com" }]
+requires-python = ">=3.9, <4"
+readme = "README.md"
+license.file = "LICENSE"
+maintainers = [{ name = "Max Kanter", email = "kmax12@gmail.com" }]
+keywords = [
+    "energy",
+    "independent system operator",
+]
 classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
@@ -11,48 +19,39 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
-authors = [
-    "Max Kanter <kmax12@gmail.com>"
+dependencies = [
+    "requests>=2.32.2,<3",
+    "numpy>=1.26.4,<2",
+    "pandas>1.3.0",
+    "tqdm>=4.66.3,<5",
+    "termcolor==1.1.0",
+    "tabulate>=0.9.0,<0.10",
+    "urllib3>=2.2.2,<3",
+    "setuptools>=70.0.0,<71",
+    "idna~=3.7",
+    "certifi>=2024.7.4,<2025",
+    "virtualenv>=20.26.6,<21",
 ]
-maintainers = [
-    "Max Kanter <kmax12@gmail.com>"
-]
-keywords = ["energy", "independent system operator"]
-license = "LICENSE"
 
-[tool.poetry.urls]
-"Source Code"= "https://github.com/kmax12/gridstatusio/"
+[project.urls]
+"Source Code" = "https://github.com/kmax12/gridstatusio/"
 "Issue Tracker" = "https://github.com/kmax12/gridstatusio/issues"
 
-[tool.poetry.dependencies]
-python = ">=3.9, <4"
-requests = "^2.32.2"
-numpy = "^1.26.4"
-pandas = ">1.3.0"
-tqdm = "^4.66.3"
-termcolor = "1.1.0"
-tabulate = "^0.9.0"
-urllib3 = "^2.2.2"
-setuptools = "^70.0.0"
-idna = "^3.7"
-certifi = "^2024.7.4"
-
-# Pinned libraries for Dependabot alerts
-virtualenv = "^20.26.6"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "7.1.2"
-pytest-xdist = "3.0.2"
-pytest-rerunfailures = "10.3"
-pre-commit = "2.21.0"
-plotly = "^5.11.0"
-kaleido = "0.2.1"
-nbformat = "5.1.3"
-ruff = "^0.5.0"
+[tool.uv]
+dev-dependencies = [
+    "pytest==7.1.2",
+    "pytest-xdist==3.0.2",
+    "pytest-rerunfailures==10.3",
+    "pre-commit==2.21.0",
+    "plotly>=5.11.0,<6",
+    "kaleido==0.2.1",
+    "nbformat==5.1.3",
+    "ruff>=0.5.0,<0.6",
+]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.pytest.ini_options]
 testpaths = ["gridstatusio/tests/*"]

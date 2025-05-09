@@ -1,5 +1,9 @@
 # Changelog
 
+# 0.10.1 - May 9, 2025
+
+- Switch to `uv` for package management
+
 ## 0.10.0 - March 11, 2025
 
 - Increases version to get new dataset column namings from API

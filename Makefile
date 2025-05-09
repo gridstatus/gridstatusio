@@ -6,7 +6,7 @@ clean:
 	find . -name '*~' -delete
 	find . -name '.coverage.*' -delete
 
-PYTEST_CMD := poetry run pytest -s -vv gridstatusio/
+PYTEST_CMD := uv run pytest -s -vv gridstatusio/
 NOT_SLOW := -m "not slow"
 
 .PHONY: test
@@ -24,27 +24,39 @@ test-slow:
 
 .PHONY: installdeps-dev
 installdeps-dev:
-	poetry install --all-extras
-	poetry run pre-commit install
+	uv sync
+	uv run pre-commit install
 
 .PHONY: installdeps-test
 installdeps-test:
-	poetry install --all-extras
+	uv sync
 
 .PHONY: installdeps-docs
 installdeps-docs:
-	poetry install --all-extras
+	uv sync
 
 .PHONY: lint
 lint:
-	poetry run ruff check gridstatusio/
-	poetry run ruff format gridstatusio/ --check
+	uv run ruff check gridstatusio/
+	uv run ruff format gridstatusio/ --check
 
 .PHONY: lint-fix
 lint-fix:
-	poetry run ruff check gridstatusio/ --fix
-	poetry run ruff format gridstatusio/
+	uv run ruff check gridstatusio/ --fix
+	uv run ruff format gridstatusio/
+
+.PHONY: upgradepip
+upgradepip:
+	uv pip install --upgrade pip
+
+.PHONY: upgradebuild
+upgradebuild:
+	uv pip install --upgrade build
+
+.PHONY: upgradesetuptools
+upgradesetuptools:
+	uv pip install --upgrade setuptools
 
 .PHONY: package
 package: upgradepip upgradebuild upgradesetuptools
-	poetry build
+	uv build
