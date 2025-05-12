@@ -1,6 +1,6 @@
 [project]
 name = "gridstatusio"
-version = "0.10.0"
+version = "0.10.1"
 description = "Python Client for GridStatus.io API"
 authors = [{ name = "Max Kanter", email = "kmax12@gmail.com" }]
 requires-python = ">=3.9, <4"

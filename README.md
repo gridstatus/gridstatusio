@@ -24,8 +24,8 @@ pip install gridstatusio
 
 Upgrade using the following command
 
-```
-python -m pip install --upgrade gridstatusio
+```bash
+uv pip install --upgrade gridstatusio
 ```
 
 ## Getting Started
