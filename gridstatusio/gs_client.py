@@ -449,6 +449,8 @@ class GridStatusClient:
             "interval_end_utc",
         ]
 
+        data_timezone = dataset_metadata["data_timezone"]
+
         for col_name in df.columns:
             col_metadata = next(
                 (col for col in all_columns if col["name"] == col_name),
@@ -466,9 +468,11 @@ class GridStatusClient:
                 # If timezone is provided, returned data will have both local columns
                 # and _utc columns. We will leave the _utc columns as is.
                 if (tz and tz != "UTC") or (
-                    timezone and timezone != "UTC" and not col_name.endswith("_utc")
+                    timezone
+                    and data_timezone != "UTC"
+                    and not col_name.endswith("_utc")
                 ):
-                    df[col_name] = df[col_name].dt.tz_convert(timezone or tz)
+                    df[col_name] = df[col_name].dt.tz_convert(tz or data_timezone)
 
                     if tz:
                         df = df.rename(
