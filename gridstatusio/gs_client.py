@@ -220,6 +220,8 @@ class GridStatusClient:
         dataset,
         start=None,
         end=None,
+        publish_time_start=None,
+        publish_time_end=None,
         columns=None,
         filter_column=None,
         filter_value=None,
@@ -241,11 +243,21 @@ class GridStatusClient:
         Parameters:
             dataset (str): The name of the dataset to fetch
 
-            start (str): The start time of the data to fetch. If not provided,
-                defaults to the earliest available time for the dataset.
+            start (str): The start time of the data to fetch based on the dataset's
+            time_index_column. If not provided, defaults to the earliest available time
+            for the dataset.
 
-            end (str): The end time of the data to fetch. If not provided,
-                defaults to the latest available time for the dataset.
+            end (str): The end time of the data to fetch based on the dataset's
+            time_index_column. If not provided, defaults to the latest available time
+            for the dataset.
+
+            publish_time_start (str): The start time of the data to fetch based on the
+            dataset's publish_time_column. Data where
+            publish_time_start >= publish_time_column will be returned.
+
+            publish_time_end (str): The end time of the data to fetch based on the
+            dataset's publish_time_column. Data where
+            publish_time_end < publish_time_column will be returned.
 
             columns (list): The columns to fetch. If not provided,
                 defaults to all available columns.
@@ -326,6 +338,12 @@ class GridStatusClient:
         if end is not None:
             end = utils.handle_date(end, tz)
 
+        if publish_time_start is not None:
+            publish_time_start = utils.handle_date(publish_time_start, tz)
+
+        if publish_time_end is not None:
+            publish_time_end = utils.handle_date(publish_time_end, tz)
+
         # handle pagination
         page = 1
         has_next_page = True
@@ -346,6 +364,8 @@ class GridStatusClient:
             params = {
                 "start_time": start,
                 "end_time": end,
+                "publish_time_start": publish_time_start,
+                "publish_time_end": publish_time_end,
                 "limit": limit,
                 "page": page,
                 "page_size": page_size,

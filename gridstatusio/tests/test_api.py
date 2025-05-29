@@ -1048,7 +1048,147 @@ def test_rate_limit_hit_backoff(mock_get_request, capsys):
     for i in range(0, client.max_retries):
         expected_text = (
             f"API rate limit hit. "
-            f"Retrying again in {1 * 2 ** i} seconds. "
-            f"Retry {i+1} of {client.max_retries}."
+            f"Retrying again in {1 * 2**i} seconds. "
+            f"Retry {i + 1} of {client.max_retries}."
         )
         assert expected_text in output_text
+
+
+def test_publish_time_start_filtering():
+    publish_time_filter = "2023-09-30T12:00:00Z"
+
+    # First query without publish_time_start filter
+    df = client.get_dataset(
+        dataset="ercot_load_forecast_by_forecast_zone",
+        start="2023-10-01",
+        end="2023-10-02",
+        verbose=True,
+    )
+
+    assert df["publish_time_utc"].min() < pd.Timestamp(publish_time_filter, tz="UTC")
+
+    df_filtered = client.get_dataset(
+        dataset="ercot_load_forecast_by_forecast_zone",
+        start="2023-10-01",
+        end="2023-10-02",
+        publish_time_start=publish_time_filter,
+        verbose=True,
+    )
+
+    assert df_filtered["publish_time_utc"].min() >= pd.Timestamp(
+        publish_time_filter,
+        tz="UTC",
+    )
+    assert df_filtered["interval_start_utc"].min() == pd.Timestamp(
+        "2023-10-01 00:00:00",
+        tz="UTC",
+    )
+
+    assert df_filtered["interval_start_utc"].max() == pd.Timestamp(
+        "2023-10-01 23:00:00",
+        tz="UTC",
+    )
+
+
+def test_publish_time_end_filtering():
+    publish_time_filter = "2023-10-01T12:00:00Z"
+
+    # First query without publish_time_end filter
+    df = client.get_dataset(
+        dataset="ercot_load_forecast_by_forecast_zone",
+        start="2023-10-01",
+        end="2023-10-02",
+        verbose=True,
+    )
+
+    assert df["publish_time_utc"].max() > pd.Timestamp(publish_time_filter, tz="UTC")
+
+    df_filtered = client.get_dataset(
+        dataset="ercot_load_forecast_by_forecast_zone",
+        start="2023-10-01",
+        end="2023-10-02",
+        publish_time_end=publish_time_filter,
+        verbose=True,
+    )
+
+    assert df_filtered["publish_time_utc"].max() <= pd.Timestamp(
+        publish_time_filter,
+        tz="UTC",
+    )
+    assert df_filtered["interval_start_utc"].min() == pd.Timestamp(
+        "2023-10-01 00:00:00",
+        tz="UTC",
+    )
+
+    assert df_filtered["interval_start_utc"].max() == pd.Timestamp(
+        "2023-10-01 23:00:00",
+        tz="UTC",
+    )
+
+
+def test_publish_time_start_and_end_filtering():
+    publish_time_start = "2023-10-01T00:00:00Z"
+    publish_time_end = "2023-10-01T12:00:00Z"
+
+    # First query without publish_time_start and publish_time_end filters
+    df = client.get_dataset(
+        dataset="ercot_load_forecast_by_forecast_zone",
+        start="2023-10-01",
+        end="2023-10-02",
+        verbose=True,
+    )
+    assert df["publish_time_utc"].min() < pd.Timestamp(publish_time_start, tz="UTC")
+    assert df["publish_time_utc"].max() > pd.Timestamp(publish_time_end, tz="UTC")
+
+    df_filtered = client.get_dataset(
+        dataset="ercot_load_forecast_by_forecast_zone",
+        start="2023-10-01",
+        end="2023-10-02",
+        publish_time_start=publish_time_start,
+        publish_time_end=publish_time_end,
+        verbose=True,
+    )
+
+    assert df_filtered["publish_time_utc"].min() >= pd.Timestamp(
+        publish_time_start,
+        tz="UTC",
+    )
+    assert df_filtered["publish_time_utc"].max() < pd.Timestamp(
+        publish_time_end,
+        tz="UTC",
+    )
+    assert df_filtered["interval_start_utc"].min() == pd.Timestamp(
+        "2023-10-01 00:00:00",
+        tz="UTC",
+    )
+
+    assert df_filtered["interval_start_utc"].max() == pd.Timestamp(
+        "2023-10-01 23:00:00",
+        tz="UTC",
+    )
+
+
+def test_publish_time_start_inclusive_and_end_time_exclusive():
+    # These are actual publish times from the dataset
+    publish_time_start = "2023-09-30 17:30:03+00:00"
+    publish_time_end = "2023-10-01 02:30:00+00:00"
+
+    df = client.get_dataset(
+        dataset="ercot_load_forecast_by_forecast_zone",
+        start="2023-10-01",
+        end="2023-10-02",
+        publish_time_start=publish_time_start,
+        publish_time_end=publish_time_end,
+        verbose=True,
+    )
+
+    assert df["publish_time_utc"].min() == pd.Timestamp(
+        publish_time_start,
+        tz="UTC",
+    )
+
+    # publish_time_end is exclusive, so max should be less than this
+    assert df["publish_time_utc"].max() < pd.Timestamp(
+        publish_time_end,
+        tz="UTC",
+    )
