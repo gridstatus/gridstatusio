@@ -252,10 +252,12 @@ class GridStatusClient:
             for the dataset.
 
             publish_time_start (str): The start time of the data to fetch based on the
-            dataset's publish_time_column.
+            dataset's publish_time_column. Data where
+            publish_time_start >= publish_time_column will be returned.
 
             publish_time_end (str): The end time of the data to fetch based on the
-            dataset's publish_time_column.
+            dataset's publish_time_column. Data where
+            publish_time_end < publish_time_column will be returned.
 
             columns (list): The columns to fetch. If not provided,
                 defaults to all available columns.
