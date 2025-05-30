@@ -1,6 +1,10 @@
 # Changelog
 
-# 0.10.1 - May 9, 2025
+## 0.11.0 - May 30, 2025
+
+- Add support for specifying `timezone=market` when querying datasets to return local timestamps in the ISO timezone
+
+## 0.10.1 - May 9, 2025
 
 - Switch to `uv` for package management
 
