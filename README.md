@@ -25,7 +25,7 @@ pip install gridstatusio
 Upgrade using the following command
 
 ```bash
-uv pip install --upgrade gridstatusio
+pip install --upgrade gridstatusio
 ```
 
 ## Getting Started
@@ -48,7 +48,7 @@ Other Examples:
 
 ## Open Source
 
-If you prefer to use an open source library that fetches data directly from the source, you can check out the [github repo](https://github.com/kmax12/gridstatus). For more information on Hosted API vs Open Source API, please see this [guide](https://api.gridstatus.io/docs#section/Getting-Started/Open-Source)
+If you prefer to use an open source library that fetches data directly from the source, you can check out the [github repo](https://github.com/kmax12/gridstatus). 
 
 ## Get Help
 
