@@ -12,17 +12,20 @@
 
 # GridStatus.io Hosted API
 
-Python client for accessing the [GridStatus.io Hosted API](https://www.gridstatus.io/api).
+Python client for accessing the [GridStatus.io Hosted API](https://www.gridstatus.io/api). 
+
+Browse all available datasets in our [Data Catalog](https://www.gridstatus.io/datasets).
+
 
 ## Installation
 
-gridstatusio supports python 3.9+. Install with pip:
+`gridstatusio` supports Python 3.9+. Install with pip:
 
 ```bash
 pip install gridstatusio
 ```
 
-Upgrade using the following command
+Upgrade using the following command:
 
 ```bash
 pip install --upgrade gridstatusio
@@ -30,7 +33,7 @@ pip install --upgrade gridstatusio
 
 ## Getting Started
 
-* Sign up for a Grid Status account and retrieve your API key from your [settings page](https://www.gridstatus.io/settings/api)
+* Sign up for a Grid Status account and get your API key from the [Settings page](https://www.gridstatus.io/settings/api)
 * Set your API key as an environment variable: `export GRIDSTATUS_API_KEY=your_api_key`
 * **NOTE**: the Grid Status API has a 1 million rows per month limit on the free plan. This limit is _very_ easy to exceed when querying data, especially real time prices.
   * Make sure to add `limit` to all of your `get_dataset` calls to avoid quickly exceeding the limit.
@@ -48,7 +51,7 @@ Other Examples:
 
 ## Open Source
 
-If you prefer to use an open source library that fetches data directly from the source, you can check out the [github repo](https://github.com/gridstatus/gridstatus). 
+If you prefer to use an open source library that fetches data directly from the source, you can check out this [github repo](https://github.com/gridstatus/gridstatus). 
 
 ## Get Help
 
