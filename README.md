@@ -48,7 +48,7 @@ Other Examples:
 
 ## Open Source
 
-If you prefer to use an open source library that fetches data directly from the source, you can check out the [github repo](https://github.com/kmax12/gridstatus). 
+If you prefer to use an open source library that fetches data directly from the source, you can check out the [github repo](https://github.com/gridstatus/gridstatus). 
 
 ## Get Help
 
