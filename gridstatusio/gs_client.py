@@ -2,7 +2,6 @@ import io
 import time
 import warnings
 from datetime import datetime
-from typing import Dict, Union
 
 import pandas as pd
 import requests
@@ -10,27 +9,16 @@ from tabulate import tabulate
 from termcolor import colored
 
 from gridstatusio import __version__, utils
-
-
-def log(msg, verbose, level="info", end="\n"):
-    """Print a message if verbose matches the level"""
-    if verbose is True:
-        verbose = "info"
-
-    # if verbose is debug, print everything
-    if verbose == "debug":
-        print(msg, end=end)
-    elif verbose == "info" and level == "info":
-        print(msg, end=end)
+from gridstatusio.utils import logger
 
 
 class GridStatusClient:
     def __init__(
         self,
-        api_key=None,
-        host="https://api.gridstatus.io/v1",
-        request_format="json",
-        max_retries=3,
+        api_key: str | None = None,
+        host: str = "https://api.gridstatus.io/v1",
+        request_format: str = "json",
+        max_retries: int = 3,
     ):
         """Create a GridStatus.io API client
 
@@ -73,7 +61,7 @@ class GridStatusClient:
     def __repr__(self) -> str:
         return f"GridStatusClient(host={self.host})"
 
-    def get(self, url, params=None, verbose=False, return_raw_response_json=False):
+    def get(self, url: str, params: dict | None = None, verbose: bool = False, return_raw_response_json: bool = False) -> tuple[pd.DataFrame, dict, dict]:
         if params is None:
             params = {}
 
@@ -84,8 +72,7 @@ class GridStatusClient:
             "x-client-version": __version__,
         }
 
-        # note
-        # parameter name different for API
+        # NOTE: parameter name different for API
         # than for python client
         if "return_format" not in params:
             params["return_format"] = self.request_format
@@ -93,8 +80,8 @@ class GridStatusClient:
             if self.request_format == "json":
                 params["json_schema"] = "array-of-arrays"
 
-        log(f"\nGET {url}", verbose=verbose, level="debug")
-        log(f"Params: {params}", verbose=verbose, level="debug")
+        logger.debug(f"\nGET {url}")
+        logger.debug(f"Params: {params}")
 
         retries = 0
         initial_delay = 1
@@ -108,13 +95,11 @@ class GridStatusClient:
                 # Exponential backoff delay of 1 sec, 2 sec, 4 sec...
                 delay = initial_delay * 2**retries
                 retries += 1
-                log(
+                logger.info(
                     (
                         f"API rate limit hit. Retrying again in {delay} seconds. "
                         f"Retry {retries} of {self.max_retries}."
                     ),
-                    verbose=verbose,
-                    level="info",
                 )
                 time.sleep(delay)
             else:
@@ -136,7 +121,7 @@ class GridStatusClient:
 
         return df, meta, dataset_metadata
 
-    def list_datasets(self, filter_term=None, return_list=False):
+    def list_datasets(self, filter_term: str | None = None, return_list: bool = False) -> list[dict] | None:
         """List available datasets from the API,
         with optional filter and return list option.
 
@@ -206,37 +191,36 @@ class GridStatusClient:
                     )
                     dataset_table.append(["More Info", more_info_url])
 
-                    log(
+                    logger.info(
                         tabulate(dataset_table, headers=headers, tablefmt="pretty"),
-                        True,
                     )
-                    log("\n", True)
+                    logger.info("")
 
         if return_list:
             return matched_datasets
 
     def get_dataset(
         self,
-        dataset,
-        start=None,
-        end=None,
-        publish_time_start=None,
-        publish_time_end=None,
-        columns=None,
-        filter_column=None,
-        filter_value=None,
-        filter_operator="=",
-        publish_time=None,
-        resample=None,
-        resample_by=None,
-        resample_function="mean",
-        limit=None,
-        page_size=None,
-        tz=None,
-        timezone=None,
-        verbose=True,
-        use_cursor_pagination=True,
-        sleep_time=0,
+        dataset: str,
+        start: str | None = None,
+        end: str | None = None,
+        publish_time_start: str | None = None,
+        publish_time_end: str | None = None,
+        columns: list[str] | None = None,
+        filter_column: str | None = None,
+        filter_value: str | list[str] | None = None,
+        filter_operator: str = "=",
+        publish_time: str | None = None,
+        resample: str | None = None,
+        resample_by: str | list[str] | None = None,
+        resample_function: str = "mean",
+        limit: int | None = None,
+        page_size: int | None = None,
+        tz: str | None = None,
+        timezone: str | None = None,
+        verbose: bool = True,
+        use_cursor_pagination: bool = True,
+        sleep_time: int = 0,
     ):
         """Get a dataset from GridStatus.io API
 
@@ -397,7 +381,7 @@ class GridStatusClient:
                 params["columns"] = ",".join(columns)
 
             # Log the fetching message
-            log(f"Fetching Page {page}...", verbose, end="")
+            logger.info(f"Fetching Page {page}...")
 
             df, meta, dataset_metadata = self.get(url, params=params, verbose=verbose)
             has_next_page = meta.get("hasNextPage", False)
@@ -414,31 +398,27 @@ class GridStatusClient:
 
             # Update the fetching message with the done message
             if page == 1:
-                log(f"Done in {round(response_time, 2)} seconds. ", verbose)
+                logger.info(f"Done in {round(response_time, 2)} seconds. ")
 
             else:
-                log(
+                logger.info(
                     f"Done in {round(response_time, 2)} seconds. "
                     f"Total time: {round(total_time, 2)}s. "
                     f"Avg per page: {round(avg_time_per_page, 2)}s",
-                    verbose,
                 )
 
             if limit:
                 # Calculate percentage of rows fetched
                 pct = round((total_rows / limit) * 100, 2)
-                log(f"Total rows: {total_rows:,}/{limit:,} ({pct}% of limit)", verbose)
+                logger.info(f"Total rows: {total_rows:,}/{limit:,} ({pct}% of limit)")
 
             page += 1
             time.sleep(sleep_time)
 
-        log("", verbose=verbose)  # Add a newline for cleaner output
-
+        logger.info("")  # Add a newline for cleaner output
         df = pd.concat(dfs).reset_index(drop=True)
 
-        # Print the additional information
-        log(f"Total number of rows: {len(df)}", verbose=verbose)
-
+        logger.info(f"Total number of rows: {len(df)}")
         all_columns = dataset_metadata.get("all_columns", [])
 
         # These are columns that are always datetimes. In some situations, we will
@@ -484,8 +464,8 @@ class GridStatusClient:
     def get_daily_peak_report(
         self,
         iso: str,
-        market_date: Union[str, datetime, None] = None,
-    ) -> Dict:
+        market_date: str | datetime | None = None,
+    ) -> dict:
         """Get a daily peak report from the GridStatus.io API for the specified
         ISO on the specified date.
 
