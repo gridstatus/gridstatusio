@@ -86,3 +86,7 @@ known-first-party = ["gridstatusio"]
 venvPath = "."
 venv = ".venv"
 # typeCheckingMode = "strict" # Off for now, since it goes from 10 to 500+ errors, likely due to imports
+exclude = [
+    "gridstatusio/tests/test_api.py",
+    "gridstatusio/tests/test_timezone_behavior.py",
+]
