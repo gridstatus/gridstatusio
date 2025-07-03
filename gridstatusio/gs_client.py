@@ -390,7 +390,6 @@ class GridStatusClient:
             if columns is not None:
                 params["columns"] = ",".join(columns)
 
-            # Log the fetching message
             logger.info(f"Fetching Page {page}...")
 
             df, meta, dataset_metadata = self.get(url, params=params, verbose=verbose)
