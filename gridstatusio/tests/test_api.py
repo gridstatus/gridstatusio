@@ -1,6 +1,7 @@
 import os
 import time
 from datetime import datetime
+from typing import cast
 from unittest.mock import patch
 
 import pandas as pd
@@ -291,7 +292,7 @@ def test_filter_operator_in():
         filter_column="location",
         filter_value=locations,
         filter_operator="in",
-        start=pd.Timestamp("2023-09-07"),
+        start=cast(pd.Timestamp, pd.Timestamp("2023-09-07")),
         limit=10,
         verbose=True,
     )
@@ -816,7 +817,7 @@ def test_publish_time_latest():
 
     df = client.get_dataset(
         dataset="miso_wind_forecast_hourly",
-        start=today - pd.Timedelta(days=2),
+        start=cast(pd.Timestamp, today - pd.Timedelta(days=2)),
         end=today,
         publish_time="latest",
         verbose=True,
@@ -835,7 +836,7 @@ def test_publish_time_and_resample():
     # this is resampled by unique publish time
     df = client.get_dataset(
         dataset="miso_wind_forecast_hourly",
-        start=today - pd.Timedelta(days=2),
+        start=cast(pd.Timestamp, today - pd.Timedelta(days=2)),
         end=today,
         resample="1 day",
         verbose=True,
@@ -845,7 +846,7 @@ def test_publish_time_and_resample():
     # make sure it still works if a column is provided
     df = client.get_dataset(
         dataset="miso_wind_forecast_hourly",
-        start=today - pd.Timedelta(days=2),
+        start=cast(pd.Timestamp, today - pd.Timedelta(days=2)),
         end=today,
         columns=["miso"],
         resample="1 day",
@@ -856,7 +857,7 @@ def test_publish_time_and_resample():
     # test latest
     df = client.get_dataset(
         dataset="miso_wind_forecast_hourly",
-        start=today - pd.Timedelta(days=2),
+        start=cast(pd.Timestamp, today - pd.Timedelta(days=2)),
         columns=["miso"],
         end=today,
         publish_time="latest",
@@ -871,7 +872,7 @@ def test_publish_time_and_resample():
     # make sure it still works if a column is provided
     df = client.get_dataset(
         dataset="miso_wind_forecast_hourly",
-        start=today - pd.Timedelta(days=2),
+        start=cast(pd.Timestamp, today - pd.Timedelta(days=2)),
         end=today,
         publish_time="latest",
         columns=["miso"],
@@ -942,14 +943,14 @@ def test_pagination():
     # test no limit, no page size
     df = client.get_dataset(
         dataset=dataset,
-        start=pd.Timestamp.now(tz="UTC") - pd.Timedelta(hours=1),
+        start=cast(pd.Timestamp, pd.Timestamp.now(tz="UTC") - pd.Timedelta(hours=1)),
     )
     assert len(df) > 0
 
     # test no limit, with page size
     df = client.get_dataset(
         dataset=dataset,
-        start=pd.Timestamp.now(tz="UTC") - pd.Timedelta(minutes=30),
+        start=cast(pd.Timestamp, pd.Timestamp.now(tz="UTC") - pd.Timedelta(minutes=30)),
         # 5 minute data so at most 12 rows
         page_size=1,
     )
