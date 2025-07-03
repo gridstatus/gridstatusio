@@ -19,7 +19,7 @@ Browse all available datasets in our [Data Catalog](https://www.gridstatus.io/da
 
 ## Installation
 
-`gridstatusio` supports Python 3.9+. Install with pip:
+`gridstatusio` supports Python 3.10+. Install with pip:
 
 ```bash
 pip install gridstatusio
