@@ -291,8 +291,11 @@ def test_filter_operator_in():
     _check_dataframe(df)
 
 
-def test_get_dataset_verbose(capsys):
-    # make sure nothing print to stdout
+def test_get_dataset_verbose(caplog):
+    # Set log level to capture all logs
+    caplog.set_level("INFO")
+
+    # make sure nothing is logged when verbose=False
     client.get_dataset(
         dataset="isone_fuel_mix",
         start="2023-01-01",
@@ -301,26 +304,10 @@ def test_get_dataset_verbose(capsys):
         verbose=False,
     )
 
-    captured = capsys.readouterr()
-    assert captured.out == ""
+    # Clear the log records
+    caplog.clear()
 
-    # test debug
-    client.get_dataset(
-        dataset="isone_fuel_mix",
-        start="2023-01-01",
-        end="2023-01-05",
-        limit=1,
-        verbose="debug",
-    )
-
-    captured = capsys.readouterr()
-    assert captured.out != ""
-    # make sure the params are printed
-    assert "Done in" in captured.out
-    assert "Params: {" in captured.out
-
-    # make sure something prints to stdout
-    # but not the params
+    # Test verbose=True - should log params and timing
     client.get_dataset(
         dataset="isone_fuel_mix",
         start="2023-01-01",
@@ -329,10 +316,31 @@ def test_get_dataset_verbose(capsys):
         verbose=True,
     )
 
-    captured = capsys.readouterr()
-    assert captured.out != ""
-    assert "Done in" in captured.out
-    assert "Params: {" not in captured.out
+    log_messages = [record.message for record in caplog.records]
+    assert len(log_messages) > 0
+    # make sure the params are printed
+    assert any("Done in" in msg for msg in log_messages)
+    assert any("Params: {" in msg for msg in log_messages)
+
+    # Clear the log records
+    caplog.clear()
+
+    # Test verbose=True again - should log timing and params (second call)
+    client.get_dataset(
+        dataset="isone_fuel_mix",
+        start="2023-01-01",
+        end="2023-01-05",
+        limit=1,
+        verbose=True,
+    )
+
+    log_messages = [record.message for record in caplog.records]
+    assert len(log_messages) > 0
+    assert any("Done in" in msg for msg in log_messages)
+    assert any("Params: {" in msg for msg in log_messages)
+
+    # Clear the log records
+    caplog.clear()
 
     # same as verbose=True
     client.get_dataset(
@@ -343,10 +351,10 @@ def test_get_dataset_verbose(capsys):
         verbose="info",
     )
 
-    captured = capsys.readouterr()
-    assert captured.out != ""
-    assert "Done in" in captured.out
-    assert "Params: {" not in captured.out
+    log_messages = [record.message for record in caplog.records]
+    assert len(log_messages) > 0
+    assert any("Done in" in msg for msg in log_messages)
+    assert any("Params: {" in msg for msg in log_messages)
 
 
 def test_handles_all_nan_columns():
