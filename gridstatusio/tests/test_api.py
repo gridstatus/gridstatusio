@@ -1050,7 +1050,8 @@ def test_invalid_resampling_frequency():
 
 
 @patch("requests.get")
-def test_rate_limit_hit_backoff(mock_get_request, capsys):
+def test_rate_limit_hit_backoff(mock_get_request, caplog):
+    caplog.set_level("INFO")
     mock_get_request.return_value.status_code = 429
     with pytest.raises(
         Exception,
@@ -1062,14 +1063,14 @@ def test_rate_limit_hit_backoff(mock_get_request, capsys):
             end="2024-01-02",
         )
 
-    output_text = capsys.readouterr().out
+    log_messages = [record.message for record in caplog.records]
     for i in range(0, client.max_retries):
         expected_text = (
             f"API rate limit hit. "
             f"Retrying again in {1 * 2**i} seconds. "
             f"Retry {i + 1} of {client.max_retries}."
         )
-        assert expected_text in output_text
+        assert expected_text in log_messages
 
 
 def test_publish_time_start_filtering():
