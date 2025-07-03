@@ -1,4 +1,5 @@
 import os
+import time
 from datetime import datetime
 from unittest.mock import patch
 
@@ -12,6 +13,13 @@ client = gs.GridStatusClient(
     api_key=os.getenv("GRIDSTATUS_API_KEY_TEST"),
     host=os.getenv("GRIDSTATUS_HOST_TEST", "https://api.gridstatus.io/v1"),
 )
+
+
+@pytest.fixture(autouse=True)
+def rate_limit_pause():
+    """Add a small pause between tests to avoid rate limiting."""
+    yield
+    time.sleep(0.5)  # 500ms pause after each test
 
 
 @pytest.mark.parametrize(
