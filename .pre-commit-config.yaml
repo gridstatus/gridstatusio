@@ -37,4 +37,4 @@ repos:
     rev: v1.1.402
     hooks:
       - id: pyright
-        args: [--project=./pyproject.toml]
+        args: ["--project", "pyproject.toml"]
