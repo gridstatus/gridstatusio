@@ -1,4 +1,5 @@
 import os
+from typing import cast
 
 import pytest
 
@@ -223,7 +224,7 @@ class TestTimezoneBehavior:
         from gridstatusio.utils import handle_date
 
         # Test with timezone-aware timestamp that needs conversion
-        timestamp = pd.Timestamp("2024-01-01 12:00:00", tz="UTC")
+        timestamp = cast(pd.Timestamp, pd.Timestamp("2024-01-01 12:00:00", tz="UTC"))
         result = handle_date(timestamp, tz="US/Pacific")
 
         assert isinstance(result, pd.Timestamp)
