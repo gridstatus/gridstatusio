@@ -2,7 +2,7 @@ name: Lint Check
 on: [pull_request]
 jobs:
   lint_check:
-    name: 3.11 lint check
+    name: 3.11 lint and type check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -17,3 +17,6 @@ jobs:
           uv sync
       - name: Run lint check
         run: make lint
+
+      - name: Run type check
+        run: make type-check

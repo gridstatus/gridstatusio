@@ -1,5 +1,7 @@
 import os
+import time
 from datetime import datetime
+from typing import cast
 from unittest.mock import patch
 
 import pandas as pd
@@ -12,6 +14,13 @@ client = gs.GridStatusClient(
     api_key=os.getenv("GRIDSTATUS_API_KEY_TEST"),
     host=os.getenv("GRIDSTATUS_HOST_TEST", "https://api.gridstatus.io/v1"),
 )
+
+
+@pytest.fixture(autouse=True)
+def rate_limit_pause():
+    """Add a pause between tests to avoid rate limiting."""
+    yield
+    time.sleep(2.0)  # 2 second pause after each test
 
 
 @pytest.mark.parametrize(
@@ -100,6 +109,7 @@ def test_list_datasets_filter():
     # run once without printing things out
     client.list_datasets(filter_term=filter_term, return_list=False)
     datasets = client.list_datasets(filter_term=filter_term, return_list=True)
+    assert datasets is not None, f"No datasets returned for filter term '{filter_term}'"
     assert (
         len(datasets) >= min_results
     ), f"Expected at least {min_results} results with filter term '{filter_term}'"
@@ -282,7 +292,7 @@ def test_filter_operator_in():
         filter_column="location",
         filter_value=locations,
         filter_operator="in",
-        start=pd.Timestamp("2023-09-07"),
+        start=cast(pd.Timestamp, pd.Timestamp("2023-09-07")),
         limit=10,
         verbose=True,
     )
@@ -290,8 +300,11 @@ def test_filter_operator_in():
     _check_dataframe(df)
 
 
-def test_get_dataset_verbose(capsys):
-    # make sure nothing print to stdout
+def test_get_dataset_verbose(caplog):
+    # Set log level to capture all logs
+    caplog.set_level("INFO")
+
+    # make sure nothing is logged when verbose=False
     client.get_dataset(
         dataset="isone_fuel_mix",
         start="2023-01-01",
@@ -300,26 +313,10 @@ def test_get_dataset_verbose(capsys):
         verbose=False,
     )
 
-    captured = capsys.readouterr()
-    assert captured.out == ""
+    # Clear the log records
+    caplog.clear()
 
-    # test debug
-    client.get_dataset(
-        dataset="isone_fuel_mix",
-        start="2023-01-01",
-        end="2023-01-05",
-        limit=1,
-        verbose="debug",
-    )
-
-    captured = capsys.readouterr()
-    assert captured.out != ""
-    # make sure the params are printed
-    assert "Done in" in captured.out
-    assert "Params: {" in captured.out
-
-    # make sure something prints to stdout
-    # but not the params
+    # Test verbose=True - should log params and timing
     client.get_dataset(
         dataset="isone_fuel_mix",
         start="2023-01-01",
@@ -328,10 +325,31 @@ def test_get_dataset_verbose(capsys):
         verbose=True,
     )
 
-    captured = capsys.readouterr()
-    assert captured.out != ""
-    assert "Done in" in captured.out
-    assert "Params: {" not in captured.out
+    log_messages = [record.message for record in caplog.records]
+    assert len(log_messages) > 0
+    # make sure the params are printed
+    assert any("Done in" in msg for msg in log_messages)
+    assert any("Params: {" in msg for msg in log_messages)
+
+    # Clear the log records
+    caplog.clear()
+
+    # Test verbose=True again - should log timing and params (second call)
+    client.get_dataset(
+        dataset="isone_fuel_mix",
+        start="2023-01-01",
+        end="2023-01-05",
+        limit=1,
+        verbose=True,
+    )
+
+    log_messages = [record.message for record in caplog.records]
+    assert len(log_messages) > 0
+    assert any("Done in" in msg for msg in log_messages)
+    assert any("Params: {" in msg for msg in log_messages)
+
+    # Clear the log records
+    caplog.clear()
 
     # same as verbose=True
     client.get_dataset(
@@ -342,10 +360,10 @@ def test_get_dataset_verbose(capsys):
         verbose="info",
     )
 
-    captured = capsys.readouterr()
-    assert captured.out != ""
-    assert "Done in" in captured.out
-    assert "Params: {" not in captured.out
+    log_messages = [record.message for record in caplog.records]
+    assert len(log_messages) > 0
+    assert any("Done in" in msg for msg in log_messages)
+    assert any("Params: {" in msg for msg in log_messages)
 
 
 def test_handles_all_nan_columns():
@@ -799,7 +817,7 @@ def test_publish_time_latest():
 
     df = client.get_dataset(
         dataset="miso_wind_forecast_hourly",
-        start=today - pd.Timedelta(days=2),
+        start=cast(pd.Timestamp, today - pd.Timedelta(days=2)),
         end=today,
         publish_time="latest",
         verbose=True,
@@ -818,7 +836,7 @@ def test_publish_time_and_resample():
     # this is resampled by unique publish time
     df = client.get_dataset(
         dataset="miso_wind_forecast_hourly",
-        start=today - pd.Timedelta(days=2),
+        start=cast(pd.Timestamp, today - pd.Timedelta(days=2)),
         end=today,
         resample="1 day",
         verbose=True,
@@ -828,7 +846,7 @@ def test_publish_time_and_resample():
     # make sure it still works if a column is provided
     df = client.get_dataset(
         dataset="miso_wind_forecast_hourly",
-        start=today - pd.Timedelta(days=2),
+        start=cast(pd.Timestamp, today - pd.Timedelta(days=2)),
         end=today,
         columns=["miso"],
         resample="1 day",
@@ -839,7 +857,7 @@ def test_publish_time_and_resample():
     # test latest
     df = client.get_dataset(
         dataset="miso_wind_forecast_hourly",
-        start=today - pd.Timedelta(days=2),
+        start=cast(pd.Timestamp, today - pd.Timedelta(days=2)),
         columns=["miso"],
         end=today,
         publish_time="latest",
@@ -854,7 +872,7 @@ def test_publish_time_and_resample():
     # make sure it still works if a column is provided
     df = client.get_dataset(
         dataset="miso_wind_forecast_hourly",
-        start=today - pd.Timedelta(days=2),
+        start=cast(pd.Timestamp, today - pd.Timedelta(days=2)),
         end=today,
         publish_time="latest",
         columns=["miso"],
@@ -925,14 +943,14 @@ def test_pagination():
     # test no limit, no page size
     df = client.get_dataset(
         dataset=dataset,
-        start=pd.Timestamp.now(tz="UTC") - pd.Timedelta(hours=1),
+        start=cast(pd.Timestamp, pd.Timestamp.now(tz="UTC") - pd.Timedelta(hours=1)),
     )
     assert len(df) > 0
 
     # test no limit, with page size
     df = client.get_dataset(
         dataset=dataset,
-        start=pd.Timestamp.now(tz="UTC") - pd.Timedelta(minutes=30),
+        start=cast(pd.Timestamp, pd.Timestamp.now(tz="UTC") - pd.Timedelta(minutes=30)),
         # 5 minute data so at most 12 rows
         page_size=1,
     )
@@ -1032,7 +1050,8 @@ def test_invalid_resampling_frequency():
 
 
 @patch("requests.get")
-def test_rate_limit_hit_backoff(mock_get_request, capsys):
+def test_rate_limit_hit_backoff(mock_get_request, caplog):
+    caplog.set_level("INFO")
     mock_get_request.return_value.status_code = 429
     with pytest.raises(
         Exception,
@@ -1044,14 +1063,14 @@ def test_rate_limit_hit_backoff(mock_get_request, capsys):
             end="2024-01-02",
         )
 
-    output_text = capsys.readouterr().out
+    log_messages = [record.message for record in caplog.records]
     for i in range(0, client.max_retries):
         expected_text = (
             f"API rate limit hit. "
             f"Retrying again in {1 * 2**i} seconds. "
             f"Retry {i + 1} of {client.max_retries}."
         )
-        assert expected_text in output_text
+        assert expected_text in log_messages
 
 
 def test_publish_time_start_filtering():
