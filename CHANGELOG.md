@@ -7,6 +7,7 @@
 - Bump minimum pandas version to 2.3.0
 - Add support for pyright type checking in CI and pre-commit
 - Add function type hints
+- Update README links
 
 ## 0.11.0 - May 30, 2025
 
