@@ -86,8 +86,9 @@ class GridStatusClient:
             if self.request_format == "json":
                 params["json_schema"] = "array-of-arrays"
 
-        logger.debug(f"\nGET {url}")
-        logger.debug(f"Params: {params}")
+        if verbose:
+            logger.info(f"GET {url}")
+            logger.info(f"Params: {params}")
 
         retries = 0
         initial_delay = 1
@@ -301,9 +302,8 @@ class GridStatusClient:
                 have both UTC and local time columns. If not provided, the returned data
                 will have only UTC time columns. Defaults to None.
 
-            verbose (bool): If set to True or "info", prints additional information.
-                If set to "debug", prints more additional debug information. If
-                set to False, no additional information is printed. Defaults to True.
+            verbose (bool): If set to True, prints additional information.
+                If set to False, no additional information is printed. Defaults to True.
 
             use_cursor_pagination (bool): If set to True, uses cursor pagination on
                 the server side to fetch data. Defaults to False. When False, the
@@ -425,7 +425,6 @@ class GridStatusClient:
             page += 1
             time.sleep(sleep_time)
 
-        logger.info("")  # Add a newline for cleaner output
         df = pd.concat(dfs).reset_index(drop=True)
 
         logger.info(f"Total number of rows: {len(df)}")
