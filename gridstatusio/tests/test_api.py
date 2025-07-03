@@ -17,9 +17,39 @@ client = gs.GridStatusClient(
 
 @pytest.fixture(autouse=True)
 def rate_limit_pause():
-    """Add a small pause between tests to avoid rate limiting."""
+    """Add a pause between tests to avoid rate limiting."""
     yield
-    time.sleep(0.5)  # 500ms pause after each test
+    time.sleep(1.0)  # 1 second pause after each test
+
+
+@pytest.fixture(autouse=True)
+def multi_api_call_pause(request):
+    """Add extra pause for tests that make multiple API calls."""
+    yield
+    # Add extra pause for tests that make multiple API calls
+    multi_call_tests = [
+        "test_uses_columns",
+        "test_handles_unknown_columns",
+        "test_list_datasets_filter",
+        "test_filter_operator",
+        "test_get_dataset_verbose",
+        "test_resample_frequency",
+        "test_resample_by",
+        "test_resample_function",
+        "test_cursor_pagination_equals_offset_pagination",
+        "test_cursor_pagination_equals_offset_pagination_with_upsampling",
+        "test_cursor_pagination_equals_offset_pagination_with_downsampling",
+        "test_cursor_pagination_equals_offset_pagination_with_upsampling_and_filter",
+        "test_cursor_pagination_equals_offset_pagination_with_downsampling_and_filter",
+        "test_publish_time_and_resample",
+        "test_pagination",
+        "test_publish_time_start_filtering",
+        "test_publish_time_end_filtering",
+        "test_publish_time_start_and_end_filtering",
+    ]
+
+    if request.function.__name__ in multi_call_tests:
+        time.sleep(2.0)  # Extra 2 second pause for multi-call tests
 
 
 @pytest.mark.parametrize(

@@ -3,7 +3,7 @@ name = "gridstatusio"
 version = "0.11.0"
 description = "Python Client for GridStatus.io API"
 authors = [{ name = "Max Kanter", email = "kmax12@gmail.com" }]
-requires-python = ">=3.9, <4"
+requires-python = ">=3.10, <4"
 readme = "README.md"
 license.file = "LICENSE"
 maintainers = [{ name = "Max Kanter", email = "kmax12@gmail.com" }]
@@ -14,10 +14,10 @@ keywords = [
 classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
     "requests>=2.32.2,<3",
