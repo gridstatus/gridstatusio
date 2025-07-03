@@ -65,9 +65,9 @@ class GridStatusClient:
         self,
         url: str,
         params: dict | None = None,
-        verbose: bool = False,
+        verbose: bool | str = False,
         return_raw_response_json: bool = False,
-    ) -> tuple[pd.DataFrame, dict, dict]:
+    ) -> pd.DataFrame | dict | tuple[pd.DataFrame, dict | None, dict | None]:
         if params is None:
             params = {}
 
@@ -92,6 +92,7 @@ class GridStatusClient:
 
         retries = 0
         initial_delay = 1
+        response = None
         while retries <= self.max_retries:
             response = requests.get(url, params=params, headers=headers)
             if response.status_code == 200:
@@ -112,11 +113,15 @@ class GridStatusClient:
             else:
                 raise Exception(f"Error {response.status_code}: {response.text}")
 
+        if response is None:
+            raise RuntimeError("Response is None")
+
         if return_raw_response_json:
             return response.json()
 
-        meta = None
-        dataset_metadata = None
+        meta: dict | None = None
+        dataset_metadata: dict | None = None
+        df: pd.DataFrame
 
         if self.request_format == "json":
             data = response.json()
@@ -125,6 +130,8 @@ class GridStatusClient:
             dataset_metadata = data["dataset_metadata"]
         elif self.request_format == "csv":
             df = pd.read_csv(io.StringIO(response.text), low_memory=False)
+        else:
+            raise ValueError(f"Unsupported request_format: {self.request_format}")
 
         return df, meta, dataset_metadata
 
@@ -213,13 +220,13 @@ class GridStatusClient:
     def get_dataset(
         self,
         dataset: str,
-        start: str | None = None,
-        end: str | None = None,
-        publish_time_start: str | None = None,
-        publish_time_end: str | None = None,
+        start: str | pd.Timestamp | None = None,
+        end: str | pd.Timestamp | None = None,
+        publish_time_start: str | pd.Timestamp | None = None,
+        publish_time_end: str | pd.Timestamp | None = None,
         columns: list[str] | None = None,
         filter_column: str | None = None,
-        filter_value: str | list[str] | None = None,
+        filter_value: str | int | list[str] | None = None,
         filter_operator: str = "=",
         publish_time: str | None = None,
         resample: str | None = None,
@@ -229,7 +236,7 @@ class GridStatusClient:
         page_size: int | None = None,
         tz: str | None = None,
         timezone: str | None = None,
-        verbose: bool = True,
+        verbose: bool | str = True,
         use_cursor_pagination: bool = True,
         sleep_time: int = 0,
     ):
@@ -393,9 +400,11 @@ class GridStatusClient:
             logger.info(f"Fetching Page {page}...")
 
             df, meta, dataset_metadata = self.get(url, params=params, verbose=verbose)
-            has_next_page = meta.get("hasNextPage", False)
+            has_next_page = (
+                meta.get("hasNextPage", False) if meta is not None else False
+            )
             # Extract the cursor to send in the next request for cursor pagination
-            cursor = meta.get("cursor")
+            cursor = meta.get("cursor") if meta is not None else None
 
             total_rows += len(df)
 
@@ -427,7 +436,11 @@ class GridStatusClient:
         df = pd.concat(dfs).reset_index(drop=True)
 
         logger.info(f"Total number of rows: {len(df)}")
-        all_columns = dataset_metadata.get("all_columns", [])
+        all_columns = (
+            dataset_metadata.get("all_columns", [])
+            if dataset_metadata is not None
+            else []
+        )
 
         # These are columns that are always datetimes. In some situations, we will
         # add these columns to a dataset even if they are not in the dataset metadata,
@@ -437,7 +450,9 @@ class GridStatusClient:
             "interval_end_utc",
         ]
 
-        data_timezone = dataset_metadata["data_timezone"]
+        data_timezone = (
+            dataset_metadata["data_timezone"] if dataset_metadata is not None else "UTC"
+        )
 
         for col_name in df.columns:
             col_metadata = next(

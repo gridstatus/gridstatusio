@@ -28,8 +28,8 @@ def handle_date(
     date: str | pd.Timestamp | None,
     tz: str | None = None,
 ) -> pd.Timestamp | None:
-    if date is None:
-        return date
+    if date is None or pd.isna(date):
+        return None
 
     if date == "today":
         date = pd.Timestamp.now(tz=tz).normalize()
