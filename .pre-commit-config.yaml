@@ -33,3 +33,8 @@ repos:
         types_or: [ python, jupyter ]
         args:
           - --config=./pyproject.toml
+  - repo: https://github.com/RobertCraigie/pyright-python
+    rev: v1.1.402
+    hooks:
+      - id: pyright
+        args: [--project=./pyproject.toml]
