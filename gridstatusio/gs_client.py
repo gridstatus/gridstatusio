@@ -2,6 +2,7 @@ import io
 import time
 import warnings
 from datetime import datetime
+from typing import cast
 
 import pandas as pd
 import requests
@@ -488,7 +489,7 @@ class GridStatusClient:
         self,
         iso: str,
         market_date: str | datetime | None = None,
-    ) -> dict:
+    ) -> dict[str, object]:
         """Get a daily peak report from the GridStatus.io API for the specified
         ISO on the specified date.
 
@@ -513,7 +514,7 @@ class GridStatusClient:
             market_date = market_date.strftime("%Y-%m-%d")
 
         url = f"{self.host}/reports/daily_peak/{iso}?date={market_date}"
-        return self.get(url, return_raw_response_json=True)
+        return cast(dict[str, object], self.get(url, return_raw_response_json=True))
 
 
 if __name__ == "__main__":
