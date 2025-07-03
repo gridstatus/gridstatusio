@@ -1,7 +1,7 @@
 import logging
 import pandas as pd
 
-def setup_gs_logger(level: int = logging.DEBUG) -> logging.Logger:
+def setup_gsio_logger(level: int = logging.DEBUG) -> logging.Logger:
     logger = logging.getLogger("gridstatusio")
 
     if not logger.handlers:
@@ -18,7 +18,7 @@ def setup_gs_logger(level: int = logging.DEBUG) -> logging.Logger:
 
     return logger
 
-logger = setup_gs_logger()
+logger = setup_gsio_logger()
 
 def handle_date(date: str | pd.Timestamp | None, tz: str | None = None) -> pd.Timestamp | None:
     if date is None:
