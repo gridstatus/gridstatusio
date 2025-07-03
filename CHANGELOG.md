@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.12.0 - July 3, 2025
+
+- Add support for Python 3.13
+- Drop support for Python 3.9
+- Bump minimum pandas version to 2.3.0
+- Add support for pyright type checking in CI and pre-commit
+- Add function type hints
+
 ## 0.11.0 - May 30, 2025
 
 - Add support for filtering data by publish time
