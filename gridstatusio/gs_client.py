@@ -61,7 +61,13 @@ class GridStatusClient:
     def __repr__(self) -> str:
         return f"GridStatusClient(host={self.host})"
 
-    def get(self, url: str, params: dict | None = None, verbose: bool = False, return_raw_response_json: bool = False) -> tuple[pd.DataFrame, dict, dict]:
+    def get(
+        self,
+        url: str,
+        params: dict | None = None,
+        verbose: bool = False,
+        return_raw_response_json: bool = False,
+    ) -> tuple[pd.DataFrame, dict, dict]:
         if params is None:
             params = {}
 
@@ -121,7 +127,11 @@ class GridStatusClient:
 
         return df, meta, dataset_metadata
 
-    def list_datasets(self, filter_term: str | None = None, return_list: bool = False) -> list[dict] | None:
+    def list_datasets(
+        self,
+        filter_term: str | None = None,
+        return_list: bool = False,
+    ) -> list[dict] | None:
         """List available datasets from the API,
         with optional filter and return list option.
 

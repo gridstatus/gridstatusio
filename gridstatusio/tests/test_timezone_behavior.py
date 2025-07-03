@@ -219,16 +219,17 @@ class TestTimezoneBehavior:
     def test_handle_date_tz_convert(self):
         """Test the tz_convert case in utils.handle_date function"""
         import pandas as pd
+
         from gridstatusio.utils import handle_date
-        
+
         # Test with timezone-aware timestamp that needs conversion
         timestamp = pd.Timestamp("2024-01-01 12:00:00", tz="UTC")
         result = handle_date(timestamp, tz="US/Pacific")
-        
+
         assert isinstance(result, pd.Timestamp)
         assert result.tzinfo is not None
         assert str(result.tzinfo) == "US/Pacific"
-        
+
         # UTC 12:00:00 should be 04:00:00 in US/Pacific (8 hours behind)
         expected = pd.Timestamp("2024-01-01 04:00:00", tz="US/Pacific")
         assert result == expected
