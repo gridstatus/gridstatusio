@@ -49,6 +49,25 @@ Other Examples:
 - [CAISO April Net Load Analysis](/Examples/CAISO%20April%20Net%20Load.ipynb)
 - [Resample Data to Different Frequencies](/Examples/Resample%20Data.ipynb)
 
+## Retry Configuration
+
+The client automatically retries requests for rate limits (429), server errors (5xx), and network issues using exponential backoff. You can customize retry behavior:
+
+```python
+client = GridStatusClient(
+    max_retries=3,        # Maximum retries (default: 5)
+    base_delay=1.0,       # Base delay in seconds (default: 2.0)
+    exponential_base=1.5, # Exponential backoff multiplier (default: 2.0)
+)
+```
+
+The retry delay follows the formula `delay = base_delay * (exponential_base ** retry_count)`.
+
+Retries are useful when:
+• You're making pagination-heavy requests and risk hitting short-term rate limits
+• A request fails due to a temporary server error
+• A network issue or timeout interrupts the request
+
 ## Open Source
 
 If you prefer to use an open source library that fetches data directly from the source, you can check out this [github repo](https://github.com/gridstatus/gridstatus). 

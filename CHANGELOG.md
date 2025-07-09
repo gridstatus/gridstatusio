@@ -1,5 +1,12 @@
 # Changelog
 
+## vNext - TBD
+ - **Enhanced retry logic with exponential backoff**: 
+   - The client now retries on additional HTTP status codes (500, 502, 503, 504) and network exceptions (ConnectionError, Timeout), not just 429 rate limit errors
+   - Added `base_delay` (default: 2.0 seconds) and `exponential_base` (default: 2.0) for customizable exponential backoff timing
+   - Increased default `max_retries` from 3 to 5 for better resilience
+   - Enhanced logging shows specific error details and retry timing information
+
 ## 0.12.0 - July 3, 2025
 
 - Add support for Python 3.13
