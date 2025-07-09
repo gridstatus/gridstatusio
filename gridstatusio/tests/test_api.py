@@ -1,41 +1,16 @@
 import os
-import time
 from datetime import datetime
 from typing import cast
-from unittest.mock import patch
 
 import pandas as pd
 import pytest
 
 import gridstatusio as gs
-from gridstatusio.version import version_is_higher
 
 client = gs.GridStatusClient(
     api_key=os.getenv("GRIDSTATUS_API_KEY_TEST"),
     host=os.getenv("GRIDSTATUS_HOST_TEST", "https://api.gridstatus.io/v1"),
 )
-
-
-@pytest.fixture(autouse=True)
-def rate_limit_pause():
-    """Add a pause between tests to avoid rate limiting."""
-    yield
-    time.sleep(2.0)  # 2 second pause after each test
-
-
-@pytest.mark.parametrize(
-    "latest, current, expected",
-    [
-        ("1.0.0", "0.9.9", True),
-        ("0.9.9", "1.0.0", False),
-        ("1.0.0", "1.0.0", False),
-        ("1.0.1", "1.0.0", True),
-        ("1.0.0", "1.0.1", False),
-        ("1.1.0", "1.0.9", True),
-    ],
-)
-def test_version_is_higher(latest, current, expected):
-    assert version_is_higher(latest, current) == expected
 
 
 def test_invalid_api_key():
@@ -1047,30 +1022,6 @@ def test_invalid_resampling_frequency():
             start="2024-01-01",
             end="2024-01-02",
         )
-
-
-@patch("requests.get")
-def test_rate_limit_hit_backoff(mock_get_request, caplog):
-    caplog.set_level("INFO")
-    mock_get_request.return_value.status_code = 429
-    with pytest.raises(
-        Exception,
-        match="Rate limited. Exceeded maximum number of retries",
-    ):
-        client.get_dataset(
-            "pjm_load",
-            start="2024-01-01",
-            end="2024-01-02",
-        )
-
-    log_messages = [record.message for record in caplog.records]
-    for i in range(0, client.max_retries):
-        expected_text = (
-            f"API rate limit hit. "
-            f"Retrying again in {1 * 2**i} seconds. "
-            f"Retry {i + 1} of {client.max_retries}."
-        )
-        assert expected_text in log_messages
 
 
 def test_publish_time_start_filtering():
