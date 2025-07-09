@@ -51,7 +51,7 @@ Other Examples:
 
 ## Retry Configuration
 
-The client automatically retries requests for rate limits (429), server errors (5xx), and network issues using exponential backoff. You can customize retry behavior:
+The client retries failed requests due to rate limits (429), server errors (5xx), and network issues using exponential backoff. You can customize retry behavior:
 
 ```python
 client = GridStatusClient(
@@ -64,9 +64,12 @@ client = GridStatusClient(
 The retry delay follows the formula `delay = base_delay * (exponential_base ** retry_count)`.
 
 Retries are useful when:
-• You're making pagination-heavy requests and risk hitting short-term rate limits
-• A request fails due to a temporary server error
-• A network issue or timeout interrupts the request
+
+* You're making pagination-heavy requests and risk hitting short-term rate limits
+* A request fails due to a temporary server error
+* A network issue or timeout interrupts the request
+
+To disable retries entirely, set `max_retries=0`.
 
 ## Open Source
 
