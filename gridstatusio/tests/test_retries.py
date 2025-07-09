@@ -65,3 +65,25 @@ def test_connection_error_backoff(mock_get_request, caplog):
             f"Retry {i + 1} of {client.max_retries}."
         )
         assert expected_text in log_messages
+
+
+@patch("requests.get")
+def test_400_error_no_retry(mock_get_request, caplog):
+    caplog.set_level("INFO")
+    mock_get_request.return_value.status_code = 400
+    mock_get_request.return_value.text = '{"message":"something arbitrary happened"}'
+
+    with pytest.raises(
+        Exception,
+        match='Error 400: {"message":"something arbitrary happened"}',
+    ):
+        client.get_dataset(
+            "pjm_load",
+            start="2024-01-01",
+            end="2024-01-02",
+        )
+
+    # Verify no retry messages were logged since 400 is not retriable
+    log_messages = [record.message for record in caplog.records]
+    retry_messages = [msg for msg in log_messages if "Retrying in" in msg]
+    assert len(retry_messages) == 0, "400 errors should not be retried"
