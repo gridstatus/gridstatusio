@@ -6,11 +6,27 @@ from typing import cast
 
 import pandas as pd
 import requests
+from requests.exceptions import ConnectionError, Timeout
 from tabulate import tabulate
 from termcolor import colored
 
 from gridstatusio import __version__, utils
 from gridstatusio.utils import logger
+
+# Define retriable HTTP status codes
+RETRIABLE_STATUS_CODES = {
+    429,  # Too Many Requests
+    500,  # Internal Server Error
+    502,  # Bad Gateway
+    503,  # Service Unavailable
+    504,  # Gateway Timeout
+}
+
+# Define retriable exception types
+RETRIABLE_EXCEPTIONS = (
+    ConnectionError,
+    Timeout,
+)
 
 
 class GridStatusClient:
@@ -19,7 +35,9 @@ class GridStatusClient:
         api_key: str | None = None,
         host: str = "https://api.gridstatus.io/v1",
         request_format: str = "json",
-        max_retries: int = 3,
+        max_retries: int = 5,
+        base_delay: float = 2.0,
+        exponential_base: float = 2.0,
     ):
         """Create a GridStatus.io API client
 
@@ -33,8 +51,14 @@ class GridStatusClient:
             request_format (str): The format to use for requests. Options are "json"
                 or "csv". Defaults to "json".
 
-            max_retries (int): The maximum number of retries to attempt if an API rate
-                limit is hit when requesting data. Defaults to 3.
+            max_retries (int): The maximum number of retries to attempt for retriable
+                errors (rate limits, server errors, network timeouts). Defaults to 4.
+
+            base_delay (float): Base delay in seconds for exponential backoff.
+                Defaults to 2.0.
+
+            exponential_base (float): Base for exponential backoff calculation.
+                Defaults to 2.0.
         """
 
         if api_key is None:
@@ -53,6 +77,8 @@ class GridStatusClient:
         self.host = host
         self.request_format = request_format
         self.max_retries = max_retries
+        self.base_delay = base_delay
+        self.exponential_base = exponential_base
 
         assert self.request_format in [
             "json",
@@ -61,6 +87,69 @@ class GridStatusClient:
 
     def __repr__(self) -> str:
         return f"GridStatusClient(host={self.host})"
+
+    def _get_with_retry(
+        self,
+        url: str,
+        params: dict,
+        headers: dict,
+        verbose: bool | str = False,
+    ) -> requests.Response:
+        """Execute GET request with retry logic for retriable errors"""
+
+        if verbose:
+            logger.info(f"GET {url}")
+            logger.info(f"Params: {params}")
+
+        retries = 0
+        response = None
+
+        def _retry_delay_and_log(reason: str):
+            delay = self.base_delay * (self.exponential_base**retries)
+            delay = int(delay)
+
+            logger.info(
+                f"{reason}. Retrying in {delay} seconds. "
+                f"Retry {retries + 1} of {self.max_retries}.",
+            )
+            time.sleep(delay)
+
+        while retries <= self.max_retries:
+            try:
+                response = requests.get(url, params=params, headers=headers)
+
+                if response.status_code == 200:
+                    break
+                elif response.status_code in RETRIABLE_STATUS_CODES:
+                    # sometimes there is special detail in the response
+                    # for example, rate limited errors have a detail field
+                    # that includes the rate limit details
+                    detail = response.json().get("detail", response.text)
+                    if retries >= self.max_retries:
+                        raise Exception(
+                            f"HTTP {response.status_code}: {detail}. "
+                            f"Exceeded maximum number of retries",
+                        )
+                    _retry_delay_and_log(detail)
+                    retries += 1
+                else:
+                    raise Exception(f"Error {response.status_code}: {response.text}")
+
+            except RETRIABLE_EXCEPTIONS as e:
+                if retries >= self.max_retries:
+                    raise Exception(
+                        f"Network error: {str(e)}. Exceeded maximum number of retries",
+                    )
+                _retry_delay_and_log(f"Network error ({type(e).__name__})")
+                retries += 1
+
+            except Exception:
+                raise
+
+        if response is None:
+            raise RuntimeError("Response is None")
+
+        return response
 
     def get(
         self,
@@ -87,35 +176,7 @@ class GridStatusClient:
             if self.request_format == "json":
                 params["json_schema"] = "array-of-arrays"
 
-        if verbose:
-            logger.info(f"GET {url}")
-            logger.info(f"Params: {params}")
-
-        retries = 0
-        initial_delay = 1
-        response = None
-        while retries <= self.max_retries:
-            response = requests.get(url, params=params, headers=headers)
-            if response.status_code == 200:
-                break
-            elif (response.status_code == 429) and (retries == self.max_retries):
-                raise Exception("Rate limited. Exceeded maximum number of retries")
-            elif response.status_code == 429:
-                # Exponential backoff delay of 1 sec, 2 sec, 4 sec...
-                delay = initial_delay * 2**retries
-                retries += 1
-                logger.info(
-                    (
-                        f"API rate limit hit. Retrying again in {delay} seconds. "
-                        f"Retry {retries} of {self.max_retries}."
-                    ),
-                )
-                time.sleep(delay)
-            else:
-                raise Exception(f"Error {response.status_code}: {response.text}")
-
-        if response is None:
-            raise RuntimeError("Response is None")
+        response = self._get_with_retry(url, params, headers, verbose)
 
         if return_raw_response_json:
             return response.json()

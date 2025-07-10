@@ -42,7 +42,7 @@ dev-dependencies = [
     "pytest==7.1.2",
     "pytest-xdist==3.0.2",
     "pytest-rerunfailures==10.3",
-    "pre-commit==2.21.0",
+    "pre-commit==4.2.0",
     "plotly>=5.11.0,<6",
     "kaleido==0.2.1",
     "nbformat==5.1.3",
