@@ -1,10 +1,10 @@
 import requests
 from termcolor import colored
 
-__version__ = "0.10.1"
+__version__ = "0.12.0"
 
 
-def get_latest_version():
+def get_latest_version() -> str:
     """Get the latest version of gridstatusio from PyPI"""
 
     response = requests.get("https://pypi.org/pypi/gridstatusio/json")  # noqa: E501
@@ -12,7 +12,7 @@ def get_latest_version():
     return latest_version
 
 
-def version_is_higher(latest, current):
+def version_is_higher(latest: str, current: str) -> bool:
     latest_parts = [int(x) for x in latest.split(".")]
     current_parts = [int(x) for x in current.split(".")]
 
@@ -24,7 +24,7 @@ def version_is_higher(latest, current):
     return False
 
 
-def check_for_update():
+def check_for_update() -> None:
     latest = get_latest_version()
     if version_is_higher(latest, __version__):
         print(

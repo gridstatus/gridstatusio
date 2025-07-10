@@ -2,35 +2,42 @@ import io
 import time
 import warnings
 from datetime import datetime
-from typing import Dict, Union
+from typing import cast
 
 import pandas as pd
 import requests
+from requests.exceptions import ConnectionError, Timeout
 from tabulate import tabulate
 from termcolor import colored
 
 from gridstatusio import __version__, utils
+from gridstatusio.utils import logger
 
+# Define retriable HTTP status codes
+RETRIABLE_STATUS_CODES = {
+    429,  # Too Many Requests
+    500,  # Internal Server Error
+    502,  # Bad Gateway
+    503,  # Service Unavailable
+    504,  # Gateway Timeout
+}
 
-def log(msg, verbose, level="info", end="\n"):
-    """Print a message if verbose matches the level"""
-    if verbose is True:
-        verbose = "info"
-
-    # if verbose is debug, print everything
-    if verbose == "debug":
-        print(msg, end=end)
-    elif verbose == "info" and level == "info":
-        print(msg, end=end)
+# Define retriable exception types
+RETRIABLE_EXCEPTIONS = (
+    ConnectionError,
+    Timeout,
+)
 
 
 class GridStatusClient:
     def __init__(
         self,
-        api_key=None,
-        host="https://api.gridstatus.io/v1",
-        request_format="json",
-        max_retries=3,
+        api_key: str | None = None,
+        host: str = "https://api.gridstatus.io/v1",
+        request_format: str = "json",
+        max_retries: int = 5,
+        base_delay: float = 2.0,
+        exponential_base: float = 2.0,
     ):
         """Create a GridStatus.io API client
 
@@ -44,8 +51,14 @@ class GridStatusClient:
             request_format (str): The format to use for requests. Options are "json"
                 or "csv". Defaults to "json".
 
-            max_retries (int): The maximum number of retries to attempt if an API rate
-                limit is hit when requesting data. Defaults to 3.
+            max_retries (int): The maximum number of retries to attempt for retriable
+                errors (rate limits, server errors, network timeouts). Defaults to 4.
+
+            base_delay (float): Base delay in seconds for exponential backoff.
+                Defaults to 2.0.
+
+            exponential_base (float): Base for exponential backoff calculation.
+                Defaults to 2.0.
         """
 
         if api_key is None:
@@ -64,6 +77,8 @@ class GridStatusClient:
         self.host = host
         self.request_format = request_format
         self.max_retries = max_retries
+        self.base_delay = base_delay
+        self.exponential_base = exponential_base
 
         assert self.request_format in [
             "json",
@@ -73,7 +88,76 @@ class GridStatusClient:
     def __repr__(self) -> str:
         return f"GridStatusClient(host={self.host})"
 
-    def get(self, url, params=None, verbose=False, return_raw_response_json=False):
+    def _get_with_retry(
+        self,
+        url: str,
+        params: dict,
+        headers: dict,
+        verbose: bool | str = False,
+    ) -> requests.Response:
+        """Execute GET request with retry logic for retriable errors"""
+
+        if verbose:
+            logger.info(f"GET {url}")
+            logger.info(f"Params: {params}")
+
+        retries = 0
+        response = None
+
+        def _retry_delay_and_log(reason: str):
+            delay = self.base_delay * (self.exponential_base**retries)
+            delay = int(delay)
+
+            logger.info(
+                f"{reason}. Retrying in {delay} seconds. "
+                f"Retry {retries + 1} of {self.max_retries}.",
+            )
+            time.sleep(delay)
+
+        while retries <= self.max_retries:
+            try:
+                response = requests.get(url, params=params, headers=headers)
+
+                if response.status_code == 200:
+                    break
+                elif response.status_code in RETRIABLE_STATUS_CODES:
+                    # sometimes there is special detail in the response
+                    # for example, rate limited errors have a detail field
+                    # that includes the rate limit details
+                    detail = response.json().get("detail", response.text)
+                    if retries >= self.max_retries:
+                        raise Exception(
+                            f"HTTP {response.status_code}: {detail}. "
+                            f"Exceeded maximum number of retries",
+                        )
+                    _retry_delay_and_log(detail)
+                    retries += 1
+                else:
+                    raise Exception(f"Error {response.status_code}: {response.text}")
+
+            except RETRIABLE_EXCEPTIONS as e:
+                if retries >= self.max_retries:
+                    raise Exception(
+                        f"Network error: {str(e)}. Exceeded maximum number of retries",
+                    )
+                _retry_delay_and_log(f"Network error ({type(e).__name__})")
+                retries += 1
+
+            except Exception:
+                raise
+
+        if response is None:
+            raise RuntimeError("Response is None")
+
+        return response
+
+    def get(
+        self,
+        url: str,
+        params: dict | None = None,
+        verbose: bool | str = False,
+        return_raw_response_json: bool = False,
+    ) -> pd.DataFrame | dict | tuple[pd.DataFrame, dict | None, dict | None]:
         if params is None:
             params = {}
 
@@ -84,8 +168,7 @@ class GridStatusClient:
             "x-client-version": __version__,
         }
 
-        # note
-        # parameter name different for API
+        # NOTE: parameter name different for API
         # than for python client
         if "return_format" not in params:
             params["return_format"] = self.request_format
@@ -93,38 +176,14 @@ class GridStatusClient:
             if self.request_format == "json":
                 params["json_schema"] = "array-of-arrays"
 
-        log(f"\nGET {url}", verbose=verbose, level="debug")
-        log(f"Params: {params}", verbose=verbose, level="debug")
-
-        retries = 0
-        initial_delay = 1
-        while retries <= self.max_retries:
-            response = requests.get(url, params=params, headers=headers)
-            if response.status_code == 200:
-                break
-            elif (response.status_code == 429) and (retries == self.max_retries):
-                raise Exception("Rate limited. Exceeded maximum number of retries")
-            elif response.status_code == 429:
-                # Exponential backoff delay of 1 sec, 2 sec, 4 sec...
-                delay = initial_delay * 2**retries
-                retries += 1
-                log(
-                    (
-                        f"API rate limit hit. Retrying again in {delay} seconds. "
-                        f"Retry {retries} of {self.max_retries}."
-                    ),
-                    verbose=verbose,
-                    level="info",
-                )
-                time.sleep(delay)
-            else:
-                raise Exception(f"Error {response.status_code}: {response.text}")
+        response = self._get_with_retry(url, params, headers, verbose)
 
         if return_raw_response_json:
             return response.json()
 
-        meta = None
-        dataset_metadata = None
+        meta: dict | None = None
+        dataset_metadata: dict | None = None
+        df: pd.DataFrame
 
         if self.request_format == "json":
             data = response.json()
@@ -133,10 +192,16 @@ class GridStatusClient:
             dataset_metadata = data["dataset_metadata"]
         elif self.request_format == "csv":
             df = pd.read_csv(io.StringIO(response.text), low_memory=False)
+        else:
+            raise ValueError(f"Unsupported request_format: {self.request_format}")
 
         return df, meta, dataset_metadata
 
-    def list_datasets(self, filter_term=None, return_list=False):
+    def list_datasets(
+        self,
+        filter_term: str | None = None,
+        return_list: bool = False,
+    ) -> list[dict] | None:
         """List available datasets from the API,
         with optional filter and return list option.
 
@@ -206,46 +271,57 @@ class GridStatusClient:
                     )
                     dataset_table.append(["More Info", more_info_url])
 
-                    log(
+                    logger.info(
                         tabulate(dataset_table, headers=headers, tablefmt="pretty"),
-                        True,
                     )
-                    log("\n", True)
+                    logger.info("")
 
         if return_list:
             return matched_datasets
 
     def get_dataset(
         self,
-        dataset,
-        start=None,
-        end=None,
-        columns=None,
-        filter_column=None,
-        filter_value=None,
-        filter_operator="=",
-        publish_time=None,
-        resample=None,
-        resample_by=None,
-        resample_function="mean",
-        limit=None,
-        page_size=None,
-        tz=None,
-        timezone=None,
-        verbose=True,
-        use_cursor_pagination=True,
-        sleep_time=0,
+        dataset: str,
+        start: str | pd.Timestamp | None = None,
+        end: str | pd.Timestamp | None = None,
+        publish_time_start: str | pd.Timestamp | None = None,
+        publish_time_end: str | pd.Timestamp | None = None,
+        columns: list[str] | None = None,
+        filter_column: str | None = None,
+        filter_value: str | int | list[str] | None = None,
+        filter_operator: str = "=",
+        publish_time: str | None = None,
+        resample: str | None = None,
+        resample_by: str | list[str] | None = None,
+        resample_function: str = "mean",
+        limit: int | None = None,
+        page_size: int | None = None,
+        tz: str | None = None,
+        timezone: str | None = None,
+        verbose: bool | str = True,
+        use_cursor_pagination: bool = True,
+        sleep_time: int = 0,
     ):
         """Get a dataset from GridStatus.io API
 
         Parameters:
             dataset (str): The name of the dataset to fetch
 
-            start (str): The start time of the data to fetch. If not provided,
-                defaults to the earliest available time for the dataset.
+            start (str): The start time of the data to fetch based on the dataset's
+            time_index_column. If not provided, defaults to the earliest available time
+            for the dataset.
 
-            end (str): The end time of the data to fetch. If not provided,
-                defaults to the latest available time for the dataset.
+            end (str): The end time of the data to fetch based on the dataset's
+            time_index_column. If not provided, defaults to the latest available time
+            for the dataset.
+
+            publish_time_start (str): The start time of the data to fetch based on the
+            dataset's publish_time_column. Data where
+            publish_time_start >= publish_time_column will be returned.
+
+            publish_time_end (str): The end time of the data to fetch based on the
+            dataset's publish_time_column. Data where
+            publish_time_end < publish_time_column will be returned.
 
             columns (list): The columns to fetch. If not provided,
                 defaults to all available columns.
@@ -295,9 +371,8 @@ class GridStatusClient:
                 have both UTC and local time columns. If not provided, the returned data
                 will have only UTC time columns. Defaults to None.
 
-            verbose (bool): If set to True or "info", prints additional information.
-                If set to "debug", prints more additional debug information. If
-                set to False, no additional information is printed. Defaults to True.
+            verbose (bool): If set to True, prints additional information.
+                If set to False, no additional information is printed. Defaults to True.
 
             use_cursor_pagination (bool): If set to True, uses cursor pagination on
                 the server side to fetch data. Defaults to False. When False, the
@@ -326,6 +401,12 @@ class GridStatusClient:
         if end is not None:
             end = utils.handle_date(end, tz)
 
+        if publish_time_start is not None:
+            publish_time_start = utils.handle_date(publish_time_start, tz)
+
+        if publish_time_end is not None:
+            publish_time_end = utils.handle_date(publish_time_end, tz)
+
         # handle pagination
         page = 1
         has_next_page = True
@@ -346,6 +427,8 @@ class GridStatusClient:
             params = {
                 "start_time": start,
                 "end_time": end,
+                "publish_time_start": publish_time_start,
+                "publish_time_end": publish_time_end,
                 "limit": limit,
                 "page": page,
                 "page_size": page_size,
@@ -376,13 +459,14 @@ class GridStatusClient:
             if columns is not None:
                 params["columns"] = ",".join(columns)
 
-            # Log the fetching message
-            log(f"Fetching Page {page}...", verbose, end="")
+            logger.info(f"Fetching Page {page}...")
 
             df, meta, dataset_metadata = self.get(url, params=params, verbose=verbose)
-            has_next_page = meta.get("hasNextPage", False)
+            has_next_page = (
+                meta.get("hasNextPage", False) if meta is not None else False
+            )
             # Extract the cursor to send in the next request for cursor pagination
-            cursor = meta.get("cursor")
+            cursor = meta.get("cursor") if meta is not None else None
 
             total_rows += len(df)
 
@@ -394,32 +478,31 @@ class GridStatusClient:
 
             # Update the fetching message with the done message
             if page == 1:
-                log(f"Done in {round(response_time, 2)} seconds. ", verbose)
+                logger.info(f"Done in {round(response_time, 2)} seconds. ")
 
             else:
-                log(
+                logger.info(
                     f"Done in {round(response_time, 2)} seconds. "
                     f"Total time: {round(total_time, 2)}s. "
                     f"Avg per page: {round(avg_time_per_page, 2)}s",
-                    verbose,
                 )
 
             if limit:
                 # Calculate percentage of rows fetched
                 pct = round((total_rows / limit) * 100, 2)
-                log(f"Total rows: {total_rows:,}/{limit:,} ({pct}% of limit)", verbose)
+                logger.info(f"Total rows: {total_rows:,}/{limit:,} ({pct}% of limit)")
 
             page += 1
             time.sleep(sleep_time)
 
-        log("", verbose=verbose)  # Add a newline for cleaner output
-
         df = pd.concat(dfs).reset_index(drop=True)
 
-        # Print the additional information
-        log(f"Total number of rows: {len(df)}", verbose=verbose)
-
-        all_columns = dataset_metadata.get("all_columns", [])
+        logger.info(f"Total number of rows: {len(df)}")
+        all_columns = (
+            dataset_metadata.get("all_columns", [])
+            if dataset_metadata is not None
+            else []
+        )
 
         # These are columns that are always datetimes. In some situations, we will
         # add these columns to a dataset even if they are not in the dataset metadata,
@@ -428,6 +511,10 @@ class GridStatusClient:
             "interval_start_utc",
             "interval_end_utc",
         ]
+
+        data_timezone = (
+            dataset_metadata["data_timezone"] if dataset_metadata is not None else "UTC"
+        )
 
         for col_name in df.columns:
             col_metadata = next(
@@ -446,9 +533,11 @@ class GridStatusClient:
                 # If timezone is provided, returned data will have both local columns
                 # and _utc columns. We will leave the _utc columns as is.
                 if (tz and tz != "UTC") or (
-                    timezone and timezone != "UTC" and not col_name.endswith("_utc")
+                    timezone
+                    and data_timezone != "UTC"
+                    and not col_name.endswith("_utc")
                 ):
-                    df[col_name] = df[col_name].dt.tz_convert(timezone or tz)
+                    df[col_name] = df[col_name].dt.tz_convert(tz or data_timezone)
 
                     if tz:
                         df = df.rename(
@@ -460,8 +549,8 @@ class GridStatusClient:
     def get_daily_peak_report(
         self,
         iso: str,
-        market_date: Union[str, datetime, None] = None,
-    ) -> Dict:
+        market_date: str | datetime | None = None,
+    ) -> dict[str, object]:
         """Get a daily peak report from the GridStatus.io API for the specified
         ISO on the specified date.
 
@@ -486,7 +575,7 @@ class GridStatusClient:
             market_date = market_date.strftime("%Y-%m-%d")
 
         url = f"{self.host}/reports/daily_peak/{iso}?date={market_date}"
-        return self.get(url, return_raw_response_json=True)
+        return cast(dict[str, object], self.get(url, return_raw_response_json=True))
 
 
 if __name__ == "__main__":

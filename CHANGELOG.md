@@ -1,6 +1,27 @@
 # Changelog
 
-# 0.10.1 - May 9, 2025
+## vNext - TBD
+ - **Enhanced retry logic with exponential backoff**: 
+   - The client now retries on additional HTTP status codes (500, 502, 503, 504) and network exceptions (ConnectionError, Timeout), not just 429 rate limit errors
+   - Added `base_delay` (default: 2.0 seconds) and `exponential_base` (default: 2.0) for customizable exponential backoff timing
+   - Increased default `max_retries` from 3 to 5 for better resilience
+   - Enhanced logging shows specific error details and retry timing information
+
+## 0.12.0 - July 3, 2025
+
+- Add support for Python 3.13
+- Drop support for Python 3.9
+- Bump minimum pandas version to 2.3.0
+- Add support for pyright type checking in CI and pre-commit
+- Add function type hints
+- Update README links
+
+## 0.11.0 - May 30, 2025
+
+- Add support for filtering data by publish time
+- Add support for specifying `timezone=market` when querying datasets to return local timestamps in the ISO timezone
+
+## 0.10.1 - May 9, 2025
 
 - Switch to `uv` for package management
 

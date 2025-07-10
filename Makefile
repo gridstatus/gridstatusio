@@ -60,3 +60,7 @@ upgradesetuptools:
 .PHONY: package
 package: upgradepip upgradebuild upgradesetuptools
 	uv build
+
+.PHONY: type-check
+type-check:
+	uv run pyright --project pyproject.toml
