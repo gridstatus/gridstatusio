@@ -1,4 +1,6 @@
 import logging
+import warnings
+from contextlib import contextmanager
 
 import pandas as pd
 
@@ -44,3 +46,11 @@ def handle_date(
             date = date.tz_convert(tz)
 
     return date
+
+
+@contextmanager
+def silence_deprecation_warnings():
+    """Context manager to temporarily silence deprecation warnings."""
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
+        yield
