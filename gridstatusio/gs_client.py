@@ -1,4 +1,5 @@
 import io
+import logging
 import time
 import warnings
 from datetime import datetime
@@ -386,6 +387,9 @@ class GridStatusClient:
         Returns:
             pd.DataFrame: The dataset as a pandas dataframe
         """
+        if not verbose:
+            logger.setLevel(logging.ERROR)
+
         if tz:
             warnings.warn(
                 "The 'tz' parameter is deprecated. Please use 'timezone' instead.",
@@ -543,6 +547,10 @@ class GridStatusClient:
                         df = df.rename(
                             columns={col_name: col_name.replace("_utc", "") + "_local"},
                         )
+
+        # Restore logger level if it was changed
+        if not verbose:
+            logger.setLevel(logging.INFO)
 
         return df
 

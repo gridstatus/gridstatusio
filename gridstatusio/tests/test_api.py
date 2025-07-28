@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 
 import gridstatusio as gs
+from gridstatusio.utils import silence_deprecation_warnings
 
 client = gs.GridStatusClient(
     api_key=os.getenv("GRIDSTATUS_API_KEY_TEST"),
@@ -275,7 +276,7 @@ def test_filter_operator_in():
     _check_dataframe(df)
 
 
-def test_get_dataset_verbose(caplog):
+def test_get_dataset_verbose_false(caplog):
     # Set log level to capture all logs
     caplog.set_level("INFO")
 
@@ -291,6 +292,8 @@ def test_get_dataset_verbose(caplog):
     # Clear the log records
     caplog.clear()
 
+
+def test_get_dataset_verbose_true(caplog):
     # Test verbose=True - should log params and timing
     client.get_dataset(
         dataset="isone_fuel_mix",
@@ -349,19 +352,20 @@ def test_handles_all_nan_columns():
     time_columns = ["interval_start_utc", "interval_end_utc"]
     time_columns_local = ["interval_start_local", "interval_end_local"]
 
-    # with time zone
-    df = client.get_dataset(
-        "nyiso_standardized_5_min",
-        start=start,
-        end=end,
-        tz="America/New_York",
-        columns=time_columns + [btm_col],
-    )
+    # with tz
+    with silence_deprecation_warnings():
+        df = client.get_dataset(
+            "nyiso_standardized_5_min",
+            start=start,
+            end=end,
+            tz="America/New_York",
+            columns=time_columns + [btm_col],
+        )
 
-    assert set(time_columns_local + [btm_col]) == set(df.columns)
-    assert pd.api.types.is_datetime64_any_dtype(df[time_columns_local[0]])
-    assert pd.api.types.is_datetime64_any_dtype(df[time_columns_local[1]])
-    assert df[btm_col].dtype == "object"
+        assert set(time_columns_local + [btm_col]) == set(df.columns)
+        assert pd.api.types.is_datetime64_any_dtype(df[time_columns_local[0]])
+        assert pd.api.types.is_datetime64_any_dtype(df[time_columns_local[1]])
+        assert df[btm_col].dtype == "object"
 
     # without timezone
     df = client.get_dataset(
@@ -383,18 +387,19 @@ def test_handles_no_results():
     time_columns_local = ["interval_start_local", "interval_end_local"]
 
     # no data, with time zone
-    df = client.get_dataset(
-        "nyiso_btm_solar",
-        start="2020-01-01",
-        end="2020-01-02",
-        tz="America/New_York",
-        columns=time_columns + [btm_col],
-    )
+    with silence_deprecation_warnings():
+        df = client.get_dataset(
+            "nyiso_btm_solar",
+            start="2020-01-01",
+            end="2020-01-02",
+            tz="America/New_York",
+            columns=time_columns + [btm_col],
+        )
 
-    assert set(time_columns_local + [btm_col]) == set(df.columns)
-    assert pd.api.types.is_datetime64_any_dtype(df[time_columns_local[0]])
-    assert pd.api.types.is_datetime64_any_dtype(df[time_columns_local[1]])
-    assert df[btm_col].dtype == "object"
+        assert set(time_columns_local + [btm_col]) == set(df.columns)
+        assert pd.api.types.is_datetime64_any_dtype(df[time_columns_local[0]])
+        assert pd.api.types.is_datetime64_any_dtype(df[time_columns_local[1]])
+        assert df[btm_col].dtype == "object"
 
     # no data, without timezone
     df = client.get_dataset(
@@ -410,13 +415,14 @@ def test_handles_no_results():
     assert df[btm_col].dtype == "object"
 
     # this date range crosses from no data to data, with timezone
-    df = client.get_dataset(
-        "nyiso_btm_solar",
-        start="2020-11-16",
-        end="2020-11-18",
-        tz="America/New_York",
-        columns=time_columns + [btm_col],
-    )
+    with silence_deprecation_warnings():
+        df = client.get_dataset(
+            "nyiso_btm_solar",
+            start="2020-11-16",
+            end="2020-11-18",
+            tz="America/New_York",
+            columns=time_columns + [btm_col],
+        )
 
     assert set(time_columns_local + [btm_col]) == set(df.columns)
     assert pd.api.types.is_datetime64_any_dtype(df[time_columns_local[0]])
@@ -531,16 +537,17 @@ def test_resample_frequency():
     )
 
     # test tz
-    df = client.get_dataset(
-        dataset="ercot_real_time_as_monitor",
-        start="2023-08-01",
-        end="2023-08-02",
-        columns=["time_utc", "prc"],
-        # dont need to specify plural
-        resample="1 hour",
-        tz="America/Chicago",
-        verbose=True,
-    )
+    with silence_deprecation_warnings():
+        df = client.get_dataset(
+            dataset="ercot_real_time_as_monitor",
+            start="2023-08-01",
+            end="2023-08-02",
+            columns=["time_utc", "prc"],
+            # dont need to specify plural
+            resample="1 hour",
+            tz="America/Chicago",
+            verbose=True,
+        )
 
     _check_dataframe(
         df,
