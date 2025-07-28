@@ -25,7 +25,16 @@ Browse all available datasets in our [Data Catalog](https://www.gridstatus.io/da
 uv pip install gridstatusio
 ```
 
-If working with elements of this repository, this will install the latest version of the client and all the dependencies you need to run the example notebooks. Be sure to activate the virtual environment after installing.
+## Getting Started
+
+* Sign up for a Grid Status account and get your API key from the [Settings page](https://www.gridstatus.io/settings/api)
+* Set your API key as an environment variable: `export GRIDSTATUS_API_KEY=your_api_key`
+* **NOTE**: the Grid Status API has a 1 million rows per month limit on the free plan. This limit is _very_ easy to exceed when querying data, especially real time prices.
+  * Make sure to add `limit` to all of your `get_dataset` calls to avoid quickly exceeding the limit.
+* The Grid Status API has rate limits that restrict the number of requests that are allowed each second, minute and hour. If rate limits are hit the client will automatically retry the request after a delay. You can configure the maximum number of retries using the `max_retries` parameter when initializing the client. If you find yourself hitting rate limits, you may need to add a delay between your requests. The [Grid Status Pricing Page](https://www.gridstatus.io/pricing) contains more details on specific rate limits.
+
+
+If working with examples in this repository, you can install the latest version of the client and all the dependencies you need to run the example notebooks. Be sure to activate the virtual environment after installing.
 
 ```bash
 uv sync
@@ -38,23 +47,15 @@ Upgrade dependencies using the following command:
 uv sync --upgrade
 ```
 
-## Getting Started
+Then check out this example notebook: [Getting Started](Examples/1.%20Getting%20Started.ipynb)
 
-* Sign up for a Grid Status account and get your API key from the [Settings page](https://www.gridstatus.io/settings/api)
-* Set your API key as an environment variable: `export GRIDSTATUS_API_KEY=your_api_key`
-* **NOTE**: the Grid Status API has a 1 million rows per month limit on the free plan. This limit is _very_ easy to exceed when querying data, especially real time prices.
-  * Make sure to add `limit` to all of your `get_dataset` calls to avoid quickly exceeding the limit.
-* The Grid Status API has rate limits that restrict the number of requests that are allowed each second, minute and hour. If rate limits are hit the client will automatically retry the request after a delay. You can configure the maximum number of retries using the `max_retries` parameter when initializing the client. If you find yourself hitting rate limits, you may need to add a delay between your requests. The [Grid Status Pricing Page](https://www.gridstatus.io/pricing) contains more details on specific rate limits.
+Other notebooks in the `Examples` directory:
 
-Check out this example notebook: [Getting Started](/Examples/Getting%20Started.ipynb)
-
-Other Examples:
-
-- [ERCOT Pricing Data](/Examples/ERCOT%20Pricing%20Data.ipynb)
-- [Finding Hubs and Zones in Pricing Data](/Examples/ISO%20Hubs.ipynb)
-- [Stacked Net Load Visualization](/Examples/Stacked%20Net%20Load%20Visualization.ipynb)
-- [CAISO April Net Load Analysis](/Examples/CAISO%20April%20Net%20Load.ipynb)
-- [Resample Data to Different Frequencies](/Examples/Resample%20Data.ipynb)
+- [Finding Hubs and Zones in Pricing Data](Examples/2.%20ISO%20Hubs.ipynb)
+- [ERCOT Pricing Data](Examples/3.%20ERCOT%20Pricing%20Data.ipynb)
+- [CAISO April Net Load Analysis](Examples/4.%20CAISO%20April%20Net%20Load.ipynb)
+- [Stacked Net Load Visualization](Examples/5.%20Stacked%20Net%20Load%20Visualization.ipynb)
+- [Resample Data to Different Frequencies](Examples/6.%20Resampling%20Data.ipynb)
 
 ## Retry Configuration
 
