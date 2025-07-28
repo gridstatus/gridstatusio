@@ -19,16 +19,10 @@ Browse all available datasets in our [Data Catalog](https://www.gridstatus.io/da
 
 ## Installation
 
-`gridstatusio` supports Python 3.10+. Install with pip:
+`gridstatusio` supports Python 3.10+. Install with uv or pip. 
 
 ```bash
-pip install gridstatusio
-```
-
-Upgrade using the following command:
-
-```bash
-pip install --upgrade gridstatusio
+uv pip install gridstatusio
 ```
 
 ## Getting Started
@@ -39,15 +33,15 @@ pip install --upgrade gridstatusio
   * Make sure to add `limit` to all of your `get_dataset` calls to avoid quickly exceeding the limit.
 * The Grid Status API has rate limits that restrict the number of requests that are allowed each second, minute and hour. If rate limits are hit the client will automatically retry the request after a delay. You can configure the maximum number of retries using the `max_retries` parameter when initializing the client. If you find yourself hitting rate limits, you may need to add a delay between your requests. The [Grid Status Pricing Page](https://www.gridstatus.io/pricing) contains more details on specific rate limits.
 
-Check out this example notebook: [Getting Started](/Examples/Getting%20Started.ipynb)
+Then check out this example notebook: [Getting Started](Examples/1.%20Getting%20Started.ipynb)
 
-Other Examples:
+Other notebooks in the [Examples](Examples) directory:
 
-- [ERCOT Pricing Data](/Examples/ERCOT%20Pricing%20Data.ipynb)
-- [Finding Hubs and Zones in Pricing Data](/Examples/ISO%20Hubs.ipynb)
-- [Stacked Net Load Visualization](/Examples/Stacked%20Net%20Load%20Visualization.ipynb)
-- [CAISO April Net Load Analysis](/Examples/CAISO%20April%20Net%20Load.ipynb)
-- [Resample Data to Different Frequencies](/Examples/Resample%20Data.ipynb)
+- [Finding Hubs and Zones in Pricing Data](Examples/2.%20ISO%20Hubs.ipynb)
+- [ERCOT Pricing Data](Examples/3.%20ERCOT%20Pricing%20Data.ipynb)
+- [CAISO April Net Load Analysis](Examples/4.%20CAISO%20April%20Net%20Load.ipynb)
+- [Stacked Net Load Visualization](Examples/5.%20Stacked%20Net%20Load%20Visualization.ipynb)
+- [Resample Data to Different Frequencies](Examples/6.%20Resampling%20Data.ipynb)
 
 ## Retry Configuration
 
