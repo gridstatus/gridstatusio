@@ -33,23 +33,9 @@ uv pip install gridstatusio
   * Make sure to add `limit` to all of your `get_dataset` calls to avoid quickly exceeding the limit.
 * The Grid Status API has rate limits that restrict the number of requests that are allowed each second, minute and hour. If rate limits are hit the client will automatically retry the request after a delay. You can configure the maximum number of retries using the `max_retries` parameter when initializing the client. If you find yourself hitting rate limits, you may need to add a delay between your requests. The [Grid Status Pricing Page](https://www.gridstatus.io/pricing) contains more details on specific rate limits.
 
-
-If working with examples in this repository, you can install the latest version of the client and all the dependencies you need to run the example notebooks. Be sure to activate the virtual environment after installing.
-
-```bash
-uv sync
-source .venv/bin/activate
-```
-
-Upgrade dependencies using the following command:
-
-```bash
-uv sync --upgrade
-```
-
 Then check out this example notebook: [Getting Started](Examples/1.%20Getting%20Started.ipynb)
 
-Other notebooks in the `Examples` directory:
+Other notebooks in the [Examples](Examples) directory:
 
 - [Finding Hubs and Zones in Pricing Data](Examples/2.%20ISO%20Hubs.ipynb)
 - [ERCOT Pricing Data](Examples/3.%20ERCOT%20Pricing%20Data.ipynb)
