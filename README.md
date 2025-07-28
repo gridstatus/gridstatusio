@@ -19,16 +19,16 @@ Browse all available datasets in our [Data Catalog](https://www.gridstatus.io/da
 
 ## Installation
 
-`gridstatusio` supports Python 3.10+. Install with pip:
+`gridstatusio` supports Python 3.10+. Install with uv. This will install the latest version of the client and all the dependencies you need to run the example notebooks.
 
 ```bash
-pip install gridstatusio
+uv sync
 ```
 
 Upgrade using the following command:
 
 ```bash
-pip install --upgrade gridstatusio
+uv sync --upgrade
 ```
 
 ## Getting Started
