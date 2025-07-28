@@ -1,3 +1,5 @@
+import os
+
 import requests
 from termcolor import colored
 
@@ -25,6 +27,10 @@ def version_is_higher(latest: str, current: str) -> bool:
 
 
 def check_for_update() -> None:
+    # NB: Option to skip version check if environment variable is set
+    if os.getenv("GSIO_SKIP_VERSION_CHECK"):
+        return
+
     latest = get_latest_version()
     if version_is_higher(latest, __version__):
         print(
