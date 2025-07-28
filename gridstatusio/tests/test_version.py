@@ -23,7 +23,7 @@ def test_version_is_higher(latest, current, expected):
 
 def test_version_check_disabled():
     """Test that version check is skipped when environment variable is set"""
-    os.environ["GSIO_SKIP_VERSION_CHECK"] = "1"
+    os.environ["GSIO_SKIP_VERSION_CHECK"] = "true"
     with patch("requests.get") as mock_get:
         check_for_update()
 
@@ -41,13 +41,3 @@ def test_version_check_enabled():
         check_for_update()
 
         mock_get.assert_called_once_with("https://pypi.org/pypi/gridstatusio/json")
-
-
-@pytest.mark.parametrize("env_value", ["1", "true", "yes", "on", "anything"])
-def test_version_check_with_different_values(env_value):
-    """Test that any value for the environment variable disables the check"""
-    os.environ["GSIO_SKIP_VERSION_CHECK"] = env_value
-
-    with patch("requests.get") as mock_get:
-        check_for_update()
-        mock_get.assert_not_called()
