@@ -65,6 +65,14 @@ Retries are useful when:
 
 To disable retries entirely, set `max_retries=0`.
 
+## Version Check
+
+The client checks for updates to the library when it is imported. It does this by making a call to the [library on PyPI](https://pypi.org/project/gridstatusio/). For certain applications, this call can be problematic, and can be disabled by setting the environment variable `GSIO_SKIP_VERSION_CHECK` to `true`.
+
+```bash
+export GSIO_SKIP_VERSION_CHECK=true
+```
+
 ## Open Source
 
 If you prefer to use an open source library that fetches data directly from the source, you can check out this [github repo](https://github.com/gridstatus/gridstatus). 
