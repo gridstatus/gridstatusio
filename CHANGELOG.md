@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.0 - July 29, 2025
+
+- Update and refresh all `Examples/` notebooks, ensuring they are up to date with the latest API changes and are working as expected.
+- `verbose` now handles all logging output in `GridStatusClient.get_dataset()`. `False` now silences all logging output.
+- Set the environment variable `GSIO_SKIP_VERSION_CHECK` to `true` to skip the version check when importing the library.
+- Silence deprecation warnings when using `tz` parameter in the test suite.
+
 ## 0.13.0 - July 10, 2025
 
  - **Enhanced retry logic with exponential backoff**: 
