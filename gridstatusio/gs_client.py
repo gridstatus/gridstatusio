@@ -3,7 +3,7 @@ import logging
 import time
 import warnings
 from datetime import datetime
-from typing import cast
+from typing import Any, cast
 
 import pandas as pd
 import requests
@@ -584,6 +584,19 @@ class GridStatusClient:
 
         url = f"{self.host}/reports/daily_peak/{iso}?date={market_date}"
         return cast(dict[str, object], self.get(url, return_raw_response_json=True))
+
+    def get_api_usage(self) -> dict[str, Any]:
+        """
+        Retrieves the plan limits, usage period start and end time, and current usage
+        associated with the api key.
+
+        Returns:
+            dict: with plan limits, current usage period start and end time, and current
+            usage period requests and rows returned
+        """
+        usage = self.get(url=f"{self.host}/api_usage", return_raw_response_json=True)
+
+        return cast(dict, usage)
 
 
 if __name__ == "__main__":
