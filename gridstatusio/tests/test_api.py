@@ -1169,3 +1169,29 @@ def test_publish_time_start_inclusive_and_end_time_exclusive():
         publish_time_end,
         tz="UTC",
     )
+
+
+def test_get_api_usage():
+    usage = client.get_api_usage()
+
+    assert list(usage.keys()) == [
+        "plan_name",
+        "limits",
+        "current_usage_period_start",
+        "current_usage_period_end",
+        "current_period_usage",
+    ]
+
+    assert list(usage["limits"].keys()) == [
+        "api_rows_returned_limit",
+        "api_requests_limit",
+        "api_rows_per_response_limit",
+        "per_second_api_rate_limit",
+        "per_minute_api_rate_limit",
+        "per_hour_api_rate_limit",
+    ]
+
+    assert list(usage["current_period_usage"].keys()) == [
+        "total_requests",
+        "total_api_rows_returned",
+    ]
