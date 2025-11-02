@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.15.0 - October 31, 2025
+
+### New Features
+
+- Add `get_api_usage()` method to `GridStatusClient` for retrieving API usage information:
+  - Returns plan name and limits (rows per response, total requests, total rows returned, rate limits per second/minute/hour)
+  - Shows current usage period start and end times
+  - Displays current period usage statistics (total requests and rows returned)
+  - Note: A limit of -1 indicates no limit
+
+### Documentation
+
+- Improve README organization and clarity:
+  - Add "Checking your API usage" section with usage examples
+  - Better formatting of installation and getting started sections
+  - Reorganize retry configuration section for improved readability
+  - Add reference to Data Catalog for browsing available datasets
+
 ## 0.14.0 - July 29, 2025
 
 - Update and refresh all `Examples/` notebooks, ensuring they are up to date with the latest API changes and are working as expected.
@@ -9,7 +27,7 @@
 
 ## 0.13.0 - July 10, 2025
 
- - **Enhanced retry logic with exponential backoff**: 
+ - **Enhanced retry logic with exponential backoff**:
    - The client now retries on additional HTTP status codes (500, 502, 503, 504) and network exceptions (ConnectionError, Timeout), not just 429 rate limit errors
    - Added `base_delay` (default: 2.0 seconds) and `exponential_base` (default: 2.0) for customizable exponential backoff timing
    - Increased default `max_retries` from 3 to 5 for better resilience
