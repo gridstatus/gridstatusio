@@ -531,7 +531,7 @@ class GridStatusClient:
             ):
                 # We need to parse all datetime columns in UTC before converting to
                 # local columns because only UTC can handle DST changes.
-                df[col_name] = pd.to_datetime(df[col_name], utc=True)
+                df[col_name] = pd.to_datetime(df[col_name], utc=True, format="ISO8601")
 
                 # TODO: remove old behavior
                 # If timezone is provided, returned data will have both local columns
