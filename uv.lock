@@ -376,7 +376,7 @@ requires-dist = [
     { name = "requests", specifier = ">=2.32.2,<3" },
     { name = "setuptools", specifier = ">=70.0.0,<81" },
     { name = "tabulate", specifier = ">=0.9.0,<0.10" },
-    { name = "termcolor", specifier = "==1.1.0" },
+    { name = "termcolor", specifier = ">=3.2.0" },
     { name = "tqdm", specifier = ">=4.66.3,<5" },
     { name = "urllib3", specifier = ">=2.2.2,<3" },
     { name = "virtualenv", specifier = ">=20.26.6,<21" },
@@ -1341,9 +1341,12 @@ wheels = [
 
 [[package]]
 name = "termcolor"
-version = "1.1.0"
+version = "3.2.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/8a/48/a76be51647d0eb9f10e2a4511bf3ffb8cc1e6b14e9e4fab46173aa79f981/termcolor-1.1.0.tar.gz", hash = "sha256:1d6d69ce66211143803fbc56652b41d73b4a400a2891d7bf7a1cdf4c02de613b", size = 3912, upload-time = "2011-01-13T18:45:33.979Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/87/56/ab275c2b56a5e2342568838f0d5e3e66a32354adcc159b495e374cda43f5/termcolor-3.2.0.tar.gz", hash = "sha256:610e6456feec42c4bcd28934a8c87a06c3fa28b01561d46aa09a9881b8622c58", size = 14423, upload-time = "2025-10-25T19:11:42.586Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f9/d5/141f53d7c1eb2a80e6d3e9a390228c3222c27705cbe7f048d3623053f3ca/termcolor-3.2.0-py3-none-any.whl", hash = "sha256:a10343879eba4da819353c55cb8049b0933890c2ebf9ad5d3ecd2bb32ea96ea6", size = 7698, upload-time = "2025-10-25T19:11:41.536Z" },
+]
 
 [[package]]
 name = "tomli"
