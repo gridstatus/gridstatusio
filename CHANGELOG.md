@@ -4,7 +4,7 @@
 
 ### Bug Fixes
 
-- Improve datetime parsing performance by specifying ISO8601 format explicitly in `pd.to_datetime()` calls
+- Specify ISO8601 format explicitly in `pd.to_datetime()` calls to handle timestamps from the API
 
 ### Dependencies
 
