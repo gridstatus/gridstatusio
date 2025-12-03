@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.15.1 - December 3, 2025
+
+### Bug Fixes
+
+- Specify ISO8601 format explicitly in `pd.to_datetime()` calls to handle timestamps from the API
+
+### Dependencies
+
+- Update `termcolor` from 1.1.0 to >=3.2.0
+
 ## 0.15.0 - October 31, 2025
 
 ### New Features
