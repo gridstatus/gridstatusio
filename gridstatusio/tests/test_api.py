@@ -46,7 +46,7 @@ def test_uses_columns():
     _check_dataframe(df, columns=columns, length=limit)
 
     # no columns specified
-    ncols = 29
+    ncols = 30
     df = client.get_dataset(dataset=dataset, verbose=True, limit=limit)
     assert df.shape == (limit, ncols), "Expected all columns"
 
