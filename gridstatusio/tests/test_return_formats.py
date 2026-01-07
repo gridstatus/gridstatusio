@@ -127,8 +127,10 @@ class TestReturnFormatsIntegration:
         assert len(result) == 10
         assert all(isinstance(row, dict) for row in result)
 
-    def test_python_format_datetime_as_string(self, client):
-        """Test that datetime columns are ISO8601 strings in python format."""
+    def test_python_format_datetime_as_datetime(self, client):
+        """Test that datetime columns are datetime objects in python format."""
+        from datetime import datetime
+
         result = client.get_dataset(
             "isone_fuel_mix",
             limit=10,
@@ -136,8 +138,8 @@ class TestReturnFormatsIntegration:
             verbose=False,
         )
         first_row = result[0]
-        # Check that datetime columns are strings
-        assert isinstance(first_row["interval_start_utc"], str)
+        # Check that datetime columns are datetime objects
+        assert isinstance(first_row["interval_start_utc"], datetime)
 
     def test_client_level_default_used(self, client):
         """Test that client-level return_format is used when not specified."""

@@ -321,6 +321,50 @@ class GridStatusClient:
 
         return df
 
+    def _apply_datetime_conversions_python(
+        self,
+        data: list[dict],
+        dataset_metadata: dict | None,
+    ) -> list[dict]:
+        """Apply datetime conversions to list of dictionaries.
+
+        Args:
+            data: List of dictionaries
+            dataset_metadata: Metadata about the dataset
+
+        Returns:
+            List of dictionaries with datetime columns converted to datetime objects
+        """
+        from datetime import datetime as dt
+
+        all_columns = (
+            dataset_metadata.get("all_columns", [])
+            if dataset_metadata is not None
+            else []
+        )
+
+        always_datetime_columns = [
+            "interval_start_utc",
+            "interval_end_utc",
+        ]
+
+        # Build set of datetime column names for faster lookup
+        datetime_columns: set[str] = set(always_datetime_columns)
+        for col in all_columns:
+            if col.get("is_datetime"):
+                datetime_columns.add(col["name"])
+
+        # Convert datetime strings to datetime objects
+        for row in data:
+            for col_name in datetime_columns:
+                if col_name in row and row[col_name] is not None:
+                    value = row[col_name]
+                    if isinstance(value, str):
+                        # Parse ISO8601 format
+                        row[col_name] = dt.fromisoformat(value)
+
+        return data
+
     def _get_with_retry(
         self,
         url: str,
@@ -646,15 +690,12 @@ class GridStatusClient:
 
             return_format (str): The format to return data in. Options are "pandas",
                 "polars", or "python". "pandas" returns pandas DataFrames, "polars"
-                returns polars DataFrames, and "python" returns lists of dictionaries
-                (with datetime columns as ISO8601 strings). Defaults to the client's
-                return_format setting.
+                returns polars DataFrames, and "python" returns lists of dictionaries.
+                Defaults to the client's return_format setting.
 
         Returns:
             pd.DataFrame, pl.DataFrame, or list[dict]: The dataset in the requested
-                format. For pandas and polars formats, datetime columns are parsed
-                and timezone-converted. For python format, datetime columns remain
-                as ISO8601 strings.
+                format. Datetime columns are parsed to datetime objects in all formats.
         """
         # Determine which format to use (convert string to enum if needed)
         format_value = return_format or self.return_format
@@ -807,7 +848,14 @@ class GridStatusClient:
             for page_data in results:
                 final_result.extend(page_data)
             logger.info(f"Total number of rows: {len(final_result)}")
-            # No datetime conversion for python format - keep as ISO8601 strings
+            # Apply datetime conversions
+            final_result = self._apply_datetime_conversions_python(
+                final_result,
+                dataset_metadata,
+            )
+            # Restore logger level if it was changed
+            if not verbose:
+                logger.setLevel(logging.INFO)
             return final_result
 
         elif effective_format == ReturnFormat.PANDAS:
