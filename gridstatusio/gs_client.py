@@ -1,18 +1,35 @@
+import csv
 import io
 import logging
 import time
 import warnings
 from datetime import datetime
+from enum import Enum
 from typing import Any, cast
 
-import pandas as pd
 import requests
 from requests.exceptions import ConnectionError, Timeout
 from tabulate import tabulate
 from termcolor import colored
 
 from gridstatusio import __version__, utils
+from gridstatusio._compat import (
+    MissingDependencyError,
+    import_pandas,
+    import_polars,
+    pandas_available,
+    polars_available,
+)
 from gridstatusio.utils import logger
+
+
+class ReturnFormat(str, Enum):
+    """Enum for supported return formats."""
+
+    PANDAS = "pandas"
+    POLARS = "polars"
+    PYTHON = "python"
+
 
 # Define retriable HTTP status codes
 RETRIABLE_STATUS_CODES = {
@@ -36,6 +53,7 @@ class GridStatusClient:
         api_key: str | None = None,
         host: str = "https://api.gridstatus.io/v1",
         request_format: str = "json",
+        return_format: ReturnFormat | str | None = None,
         max_retries: int = 5,
         base_delay: float = 2.0,
         exponential_base: float = 2.0,
@@ -51,6 +69,11 @@ class GridStatusClient:
 
             request_format (str): The format to use for requests. Options are "json"
                 or "csv". Defaults to "json".
+
+            return_format (str): The format to return data in. Options are "pandas",
+                "polars", or "python". "pandas" returns pandas DataFrames, "polars"
+                returns polars DataFrames, and "python" returns lists of dictionaries.
+                Defaults to "pandas" if pandas is installed, otherwise "python".
 
             max_retries (int): The maximum number of retries to attempt for retriable
                 errors (rate limits, server errors, network timeouts). Defaults to 4.
@@ -86,8 +109,217 @@ class GridStatusClient:
             "csv",
         ], "request_format must be 'json' or 'csv'"
 
+        # Determine default return format
+        if return_format is None:
+            # Default to pandas if available, otherwise python
+            if pandas_available():
+                self.return_format = ReturnFormat.PANDAS
+            else:
+                self.return_format = ReturnFormat.PYTHON
+        else:
+            self.return_format = ReturnFormat(return_format)
+            # Validate the requested format is available
+            self._validate_return_format(self.return_format)
+
     def __repr__(self) -> str:
         return f"GridStatusClient(host={self.host})"
+
+    def _validate_return_format(self, return_format: ReturnFormat) -> None:
+        """Validate that the requested return format is available.
+
+        Raises:
+            MissingDependencyError: If the library for the requested format
+                is not installed.
+        """
+        if return_format == ReturnFormat.PANDAS and not pandas_available():
+            raise MissingDependencyError("pandas", "pandas")
+        elif return_format == ReturnFormat.POLARS and not polars_available():
+            raise MissingDependencyError("polars", "polars")
+
+    def _parse_json_response(
+        self,
+        data: dict,
+        return_format: ReturnFormat,
+    ) -> Any:
+        """Parse JSON response into the requested format.
+
+        Args:
+            data: The JSON response data containing "data" key with array-of-arrays
+            return_format: The format to return data in
+
+        Returns:
+            Data in the requested format (list[dict], pd.DataFrame, or pl.DataFrame)
+        """
+        columns = data["data"][0]
+        rows = data["data"][1:]
+
+        if return_format == ReturnFormat.PYTHON:
+            return [dict(zip(columns, row)) for row in rows]
+
+        elif return_format == ReturnFormat.PANDAS:
+            pd = import_pandas()
+            return pd.DataFrame(rows, columns=columns)
+
+        elif return_format == ReturnFormat.POLARS:
+            pl = import_polars()
+            return pl.DataFrame(
+                {col: [row[i] for row in rows] for i, col in enumerate(columns)},
+            )
+
+        raise ValueError(f"Unsupported return_format: {return_format}")
+
+    def _parse_csv_response(
+        self,
+        text: str,
+        return_format: ReturnFormat,
+    ) -> Any:
+        """Parse CSV response into the requested format.
+
+        Args:
+            text: The CSV response text
+            return_format: The format to return data in
+
+        Returns:
+            Data in the requested format (list[dict], pd.DataFrame, or pl.DataFrame)
+        """
+        if return_format == ReturnFormat.PYTHON:
+            reader = csv.DictReader(io.StringIO(text))
+            return list(reader)
+
+        elif return_format == ReturnFormat.PANDAS:
+            pd = import_pandas()
+            return pd.read_csv(io.StringIO(text), low_memory=False)
+
+        elif return_format == ReturnFormat.POLARS:
+            pl = import_polars()
+            return pl.read_csv(io.StringIO(text))
+
+        raise ValueError(f"Unsupported return_format: {return_format}")
+
+    def _apply_datetime_conversions_pandas(
+        self,
+        df: Any,
+        dataset_metadata: dict | None,
+        tz: str | None,
+        timezone: str | None,
+    ) -> Any:
+        """Apply datetime conversions to pandas DataFrame.
+
+        Args:
+            df: The pandas DataFrame
+            dataset_metadata: Metadata about the dataset
+            tz: Deprecated timezone parameter
+            timezone: Timezone for conversion
+
+        Returns:
+            DataFrame with datetime columns converted
+        """
+        pd = import_pandas()
+
+        all_columns = (
+            dataset_metadata.get("all_columns", [])
+            if dataset_metadata is not None
+            else []
+        )
+        data_timezone = (
+            dataset_metadata["data_timezone"] if dataset_metadata is not None else "UTC"
+        )
+
+        always_datetime_columns = [
+            "interval_start_utc",
+            "interval_end_utc",
+        ]
+
+        for col_name in df.columns:
+            col_metadata = next(
+                (col for col in all_columns if col["name"] == col_name),
+                None,
+            )
+
+            if (col_metadata and col_metadata["is_datetime"]) or (
+                col_name in always_datetime_columns
+            ):
+                df[col_name] = pd.to_datetime(df[col_name], utc=True, format="ISO8601")
+
+                if (tz and tz != "UTC") or (
+                    timezone
+                    and data_timezone != "UTC"
+                    and not col_name.endswith("_utc")
+                ):
+                    df[col_name] = df[col_name].dt.tz_convert(tz or data_timezone)
+
+                    if tz:
+                        df = df.rename(
+                            columns={col_name: col_name.replace("_utc", "") + "_local"},
+                        )
+
+        return df
+
+    def _apply_datetime_conversions_polars(
+        self,
+        df: Any,
+        dataset_metadata: dict | None,
+        tz: str | None,
+        timezone: str | None,
+    ) -> Any:
+        """Apply datetime conversions to polars DataFrame.
+
+        Args:
+            df: The polars DataFrame
+            dataset_metadata: Metadata about the dataset
+            tz: Deprecated timezone parameter
+            timezone: Timezone for conversion
+
+        Returns:
+            DataFrame with datetime columns converted
+        """
+        pl = import_polars()
+
+        all_columns = (
+            dataset_metadata.get("all_columns", [])
+            if dataset_metadata is not None
+            else []
+        )
+        data_timezone = (
+            dataset_metadata["data_timezone"] if dataset_metadata is not None else "UTC"
+        )
+
+        always_datetime_columns = [
+            "interval_start_utc",
+            "interval_end_utc",
+        ]
+
+        for col_name in df.columns:
+            col_metadata = next(
+                (col for col in all_columns if col["name"] == col_name),
+                None,
+            )
+
+            if (col_metadata and col_metadata["is_datetime"]) or (
+                col_name in always_datetime_columns
+            ):
+                # Polars datetime parsing - handle ISO8601 format
+                df = df.with_columns(
+                    pl.col(col_name).str.to_datetime(time_zone="UTC").alias(col_name),
+                )
+
+                if (tz and tz != "UTC") or (
+                    timezone
+                    and data_timezone != "UTC"
+                    and not col_name.endswith("_utc")
+                ):
+                    target_tz = tz or data_timezone
+                    df = df.with_columns(
+                        pl.col(col_name)
+                        .dt.convert_time_zone(target_tz)
+                        .alias(col_name),
+                    )
+
+                    if tz:
+                        new_name = col_name.replace("_utc", "") + "_local"
+                        df = df.rename({col_name: new_name})
+
+        return df
 
     def _get_with_retry(
         self,
@@ -158,9 +390,33 @@ class GridStatusClient:
         params: dict | None = None,
         verbose: bool | str = False,
         return_raw_response_json: bool = False,
-    ) -> pd.DataFrame | dict | tuple[pd.DataFrame, dict | None, dict | None]:
+        return_format: ReturnFormat | str | None = None,
+    ) -> Any | dict | tuple[Any, dict | None, dict | None]:
+        """Execute a GET request to the API.
+
+        Args:
+            url: The URL to request
+            params: Query parameters
+            verbose: Whether to log verbose information
+            return_raw_response_json: If True, return the raw JSON response
+            return_format: The format to return data in. If None, uses the
+                client's default return_format.
+
+        Returns:
+            If return_raw_response_json is True, returns the raw JSON dict.
+            Otherwise, returns a tuple of (data, meta, dataset_metadata) where
+            data is in the requested format.
+        """
         if params is None:
             params = {}
+
+        # Determine which format to use (convert string to enum if needed)
+        format_value = return_format or self.return_format
+        if isinstance(format_value, str):
+            effective_format = ReturnFormat(format_value)
+        else:
+            effective_format = format_value
+        self._validate_return_format(effective_format)
 
         headers = {
             "x-api-key": self.api_key,
@@ -184,19 +440,18 @@ class GridStatusClient:
 
         meta: dict | None = None
         dataset_metadata: dict | None = None
-        df: pd.DataFrame
 
         if self.request_format == "json":
             data = response.json()
-            df = pd.DataFrame(data["data"][1:], columns=data["data"][0])
+            result = self._parse_json_response(data, effective_format)
             meta = data["meta"]
             dataset_metadata = data["dataset_metadata"]
         elif self.request_format == "csv":
-            df = pd.read_csv(io.StringIO(response.text), low_memory=False)
+            result = self._parse_csv_response(response.text, effective_format)
         else:
             raise ValueError(f"Unsupported request_format: {self.request_format}")
 
-        return df, meta, dataset_metadata
+        return result, meta, dataset_metadata
 
     def list_datasets(
         self,
@@ -218,11 +473,15 @@ class GridStatusClient:
         """
         url = f"{self.host}/datasets/"
 
-        df, _meta, _dataset_metadata = self.get(url)
+        # Always use python format internally for list_datasets
+        result, _meta, _dataset_metadata = self.get(
+            url,
+            return_format=ReturnFormat.PYTHON,
+        )
 
         matched_datasets = []
 
-        for dataset in df.to_dict("records"):
+        for dataset in result:
             dataset_description = dataset.get("description", "")
             if dataset_description is None:
                 dataset_description = ""
@@ -283,10 +542,10 @@ class GridStatusClient:
     def get_dataset(
         self,
         dataset: str,
-        start: str | pd.Timestamp | None = None,
-        end: str | pd.Timestamp | None = None,
-        publish_time_start: str | pd.Timestamp | None = None,
-        publish_time_end: str | pd.Timestamp | None = None,
+        start: str | datetime | None = None,
+        end: str | datetime | None = None,
+        publish_time_start: str | datetime | None = None,
+        publish_time_end: str | datetime | None = None,
         columns: list[str] | None = None,
         filter_column: str | None = None,
         filter_value: str | int | list[str] | None = None,
@@ -302,7 +561,8 @@ class GridStatusClient:
         verbose: bool | str = True,
         use_cursor_pagination: bool = True,
         sleep_time: int = 0,
-    ):
+        return_format: ReturnFormat | str | None = None,
+    ) -> Any:
         """Get a dataset from GridStatus.io API
 
         Parameters:
@@ -384,9 +644,31 @@ class GridStatusClient:
                 when requesting multiple pages of data. Can be used to slow request
                 frequency to help avoid hitting API rate limits. Defaults to 0.
 
+            return_format (str): The format to return data in. Options are "pandas",
+                "polars", or "python". "pandas" returns pandas DataFrames, "polars"
+                returns polars DataFrames, and "python" returns lists of dictionaries
+                (with datetime columns as ISO8601 strings). Defaults to the client's
+                return_format setting.
+
         Returns:
-            pd.DataFrame: The dataset as a pandas dataframe
+            pd.DataFrame, pl.DataFrame, or list[dict]: The dataset in the requested
+                format. For pandas and polars formats, datetime columns are parsed
+                and timezone-converted. For python format, datetime columns remain
+                as ISO8601 strings.
         """
+        # Determine which format to use (convert string to enum if needed)
+        format_value = return_format or self.return_format
+        if isinstance(format_value, str):
+            effective_format = ReturnFormat(format_value)
+        else:
+            effective_format = format_value
+        self._validate_return_format(effective_format)
+
+        # Determine whether to use pandas for date handling
+        use_pandas_for_dates = effective_format == ReturnFormat.PANDAS or (
+            effective_format == ReturnFormat.POLARS and pandas_available()
+        )
+
         if not verbose:
             logger.setLevel(logging.ERROR)
 
@@ -400,21 +682,29 @@ class GridStatusClient:
                 raise ValueError("'tz' and 'timezone' parameters cannot both be set.")
 
         if start is not None:
-            start = utils.handle_date(start, tz)
+            start = utils.handle_date(start, tz, use_pandas=use_pandas_for_dates)
 
         if end is not None:
-            end = utils.handle_date(end, tz)
+            end = utils.handle_date(end, tz, use_pandas=use_pandas_for_dates)
 
         if publish_time_start is not None:
-            publish_time_start = utils.handle_date(publish_time_start, tz)
+            publish_time_start = utils.handle_date(
+                publish_time_start,
+                tz,
+                use_pandas=use_pandas_for_dates,
+            )
 
         if publish_time_end is not None:
-            publish_time_end = utils.handle_date(publish_time_end, tz)
+            publish_time_end = utils.handle_date(
+                publish_time_end,
+                tz,
+                use_pandas=use_pandas_for_dates,
+            )
 
         # handle pagination
         page = 1
         has_next_page = True
-        dfs = []
+        results: list = []
         total_time = 0
         total_rows = 0
 
@@ -465,16 +755,27 @@ class GridStatusClient:
 
             logger.info(f"Fetching Page {page}...")
 
-            df, meta, dataset_metadata = self.get(url, params=params, verbose=verbose)
+            page_data, meta, dataset_metadata = self.get(
+                url,
+                params=params,
+                verbose=verbose,
+                return_format=effective_format,
+            )
             has_next_page = (
                 meta.get("hasNextPage", False) if meta is not None else False
             )
             # Extract the cursor to send in the next request for cursor pagination
             cursor = meta.get("cursor") if meta is not None else None
 
-            total_rows += len(df)
+            # Get length based on format
+            if effective_format == ReturnFormat.PYTHON:
+                page_len = len(page_data)
+            else:
+                page_len = len(page_data)
 
-            dfs.append(df)
+            total_rows += page_len
+
+            results.append(page_data)
 
             response_time = time.time() - start_time
             total_time += response_time
@@ -499,60 +800,53 @@ class GridStatusClient:
             page += 1
             time.sleep(sleep_time)
 
-        df = pd.concat(dfs).reset_index(drop=True)
+        # Concatenate results based on format
+        if effective_format == ReturnFormat.PYTHON:
+            # Flatten list of lists
+            final_result: Any = []
+            for page_data in results:
+                final_result.extend(page_data)
+            logger.info(f"Total number of rows: {len(final_result)}")
+            # No datetime conversion for python format - keep as ISO8601 strings
+            return final_result
 
-        logger.info(f"Total number of rows: {len(df)}")
-        all_columns = (
-            dataset_metadata.get("all_columns", [])
-            if dataset_metadata is not None
-            else []
-        )
-
-        # These are columns that are always datetimes. In some situations, we will
-        # add these columns to a dataset even if they are not in the dataset metadata,
-        # for example, when resampling.
-        always_datetime_columns = [
-            "interval_start_utc",
-            "interval_end_utc",
-        ]
-
-        data_timezone = (
-            dataset_metadata["data_timezone"] if dataset_metadata is not None else "UTC"
-        )
-
-        for col_name in df.columns:
-            col_metadata = next(
-                (col for col in all_columns if col["name"] == col_name),
-                None,
+        elif effective_format == ReturnFormat.PANDAS:
+            pd = import_pandas()
+            df = pd.concat(results).reset_index(drop=True)
+            logger.info(f"Total number of rows: {len(df)}")
+            # Apply datetime conversions
+            df = self._apply_datetime_conversions_pandas(
+                df,
+                dataset_metadata,
+                tz,
+                timezone,
             )
+            # Restore logger level if it was changed
+            if not verbose:
+                logger.setLevel(logging.INFO)
+            return df
 
-            if (col_metadata and col_metadata["is_datetime"]) or (
-                col_name in always_datetime_columns
-            ):
-                # We need to parse all datetime columns in UTC before converting to
-                # local columns because only UTC can handle DST changes.
-                df[col_name] = pd.to_datetime(df[col_name], utc=True, format="ISO8601")
-
-                # TODO: remove old behavior
-                # If timezone is provided, returned data will have both local columns
-                # and _utc columns. We will leave the _utc columns as is.
-                if (tz and tz != "UTC") or (
-                    timezone
-                    and data_timezone != "UTC"
-                    and not col_name.endswith("_utc")
-                ):
-                    df[col_name] = df[col_name].dt.tz_convert(tz or data_timezone)
-
-                    if tz:
-                        df = df.rename(
-                            columns={col_name: col_name.replace("_utc", "") + "_local"},
-                        )
+        elif effective_format == ReturnFormat.POLARS:
+            pl = import_polars()
+            df = pl.concat(results)
+            logger.info(f"Total number of rows: {len(df)}")
+            # Apply datetime conversions
+            df = self._apply_datetime_conversions_polars(
+                df,
+                dataset_metadata,
+                tz,
+                timezone,
+            )
+            # Restore logger level if it was changed
+            if not verbose:
+                logger.setLevel(logging.INFO)
+            return df
 
         # Restore logger level if it was changed
         if not verbose:
             logger.setLevel(logging.INFO)
 
-        return df
+        raise ValueError(f"Unsupported return_format: {effective_format}")
 
     def get_daily_peak_report(
         self,

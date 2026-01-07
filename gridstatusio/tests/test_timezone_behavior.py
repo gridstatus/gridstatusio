@@ -1,10 +1,12 @@
 import os
-from typing import cast
 
 import pytest
 
-import gridstatusio as gs
-from gridstatusio.utils import silence_deprecation_warnings
+# Skip all tests in this file if pandas is not installed
+pd = pytest.importorskip("pandas")
+
+import gridstatusio as gs  # noqa: E402
+from gridstatusio.utils import silence_deprecation_warnings  # noqa: E402
 
 client = gs.GridStatusClient(
     api_key=os.getenv("GRIDSTATUS_API_KEY_TEST"),
@@ -230,7 +232,7 @@ class TestTimezoneBehavior:
         from gridstatusio.utils import handle_date
 
         # Test with timezone-aware timestamp that needs conversion
-        timestamp = cast(pd.Timestamp, pd.Timestamp("2024-01-01 12:00:00", tz="UTC"))
+        timestamp = pd.Timestamp("2024-01-01 12:00:00", tz="UTC")
         result = handle_date(timestamp, tz="US/Pacific")
 
         assert isinstance(result, pd.Timestamp)
