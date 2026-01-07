@@ -4,6 +4,8 @@ from contextlib import contextmanager
 from datetime import datetime
 from typing import Any
 
+from gridstatusio._compat import import_pandas
+
 
 def setup_gsio_logger(level: int = logging.DEBUG) -> logging.Logger:
     logger = logging.getLogger("gridstatusio")
@@ -55,8 +57,6 @@ def handle_date(
         return date
 
     # Pandas mode
-    from gridstatusio._compat import import_pandas
-
     pd = import_pandas()
 
     if pd.isna(date):

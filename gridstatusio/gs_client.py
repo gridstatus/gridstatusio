@@ -1,6 +1,7 @@
 import csv
 import io
 import logging
+import os
 import time
 import warnings
 from datetime import datetime
@@ -942,8 +943,6 @@ class GridStatusClient:
 
 
 if __name__ == "__main__":
-    import os
-
     client = GridStatusClient(api_key=os.getenv("GRIDSTATUS_API_KEY_TEST"))
 
     client.list_datasets(filter_term="lmp")
