@@ -36,14 +36,12 @@ dependencies = [
 [project.optional-dependencies]
 pandas = [
     "pandas>=2.3.0",
-    "numpy>=1.26.4,<2",
 ]
 polars = [
     "polars>=1.36.1",
 ]
 all = [
     "pandas>=2.3.0",
-    "numpy>=1.26.4,<2",
     "polars>=1.36.1",
 ]
 
@@ -63,7 +61,6 @@ dev-dependencies = [
     "pyright>=1.1.402,<2",
     # Include optional dependencies for testing
     "pandas>=2.3.0",
-    "numpy>=1.26.4,<2",
     "polars>=1.36.1",
 ]
 
