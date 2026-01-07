@@ -34,7 +34,7 @@ class TestCompatModule:
         """Test that MissingDependencyError has correct message format."""
         err = MissingDependencyError("pandas", "pandas")
         assert "pandas" in str(err)
-        assert "pip install" in str(err)
+        assert "uv pip install" in str(err)
         assert "gridstatusio[pandas]" in str(err)
 
     def test_missing_dependency_error_attributes(self):

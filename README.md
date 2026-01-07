@@ -22,16 +22,16 @@
 
 ```bash
 # Minimal installation (returns Python objects - list of dicts)
-pip install gridstatusio
+uv pip install gridstatusio
 
 # With pandas support (returns pandas DataFrames)
-pip install gridstatusio[pandas]
+uv pip install gridstatusio[pandas]
 
 # With polars support (returns polars DataFrames)
-pip install gridstatusio[polars]
+uv pip install gridstatusio[polars]
 
 # With both pandas and polars
-pip install gridstatusio[all]
+uv pip install gridstatusio[all]
 ```
 
 ## Getting Started

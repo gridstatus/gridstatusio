@@ -19,7 +19,7 @@ class MissingDependencyError(ImportError):
         self.format_name = format_name
         msg = (
             f"The '{library}' library is required for return_format='{format_name}'. "
-            f"Install it with: pip install gridstatusio[{library}]"
+            f"Install it with: uv pip install gridstatusio[{library}"
         )
         super().__init__(msg)
 
