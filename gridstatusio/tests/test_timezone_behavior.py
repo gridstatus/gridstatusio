@@ -2,11 +2,8 @@ import os
 
 import pytest
 
-# Skip all tests in this file if pandas is not installed
-pd = pytest.importorskip("pandas")
-
-import gridstatusio as gs  # noqa: E402
-from gridstatusio.utils import silence_deprecation_warnings  # noqa: E402
+import gridstatusio as gs
+from gridstatusio.utils import silence_deprecation_warnings
 
 client = gs.GridStatusClient(
     api_key=os.getenv("GRIDSTATUS_API_KEY_TEST"),

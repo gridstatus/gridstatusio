@@ -120,7 +120,7 @@ uv venv .venv-minimal
 uv pip install -e . --python .venv-minimal/bin/python
 
 # Test: should default to python format
-uv run --python .venv-minimal/bin/python python -c "
+.venv-minimal/bin/python -c "
 from gridstatusio import GridStatusClient
 client = GridStatusClient()
 print(f'Default format: {client.return_format}')
@@ -130,13 +130,13 @@ print(data[0])
 "
 
 # Test: requesting pandas should raise MissingDependencyError
-uv run --python .venv-minimal/bin/python python -c "
+.venv-minimal/bin/python -c "
 from gridstatusio import GridStatusClient
 client = GridStatusClient(return_format='pandas')
 "
 
 # Test: requesting polars should raise MissingDependencyError
-uv run --python .venv-minimal/bin/python python -c "
+.venv-minimal/bin/python -c "
 from gridstatusio import GridStatusClient
 client = GridStatusClient(return_format='polars')
 "
@@ -153,7 +153,7 @@ uv venv .venv-pandas
 uv pip install -e ".[pandas]" --python .venv-pandas/bin/python
 
 # Test: should default to pandas format
-uv run --python .venv-pandas/bin/python python -c "
+.venv-pandas/bin/python -c "
 from gridstatusio import GridStatusClient
 client = GridStatusClient()
 print(f'Default format: {client.return_format}')
@@ -162,7 +162,7 @@ print(f'Type: {type(data)}')
 "
 
 # Test: python format should still work
-uv run --python .venv-pandas/bin/python python -c "
+.venv-pandas/bin/python -c "
 from gridstatusio import GridStatusClient
 client = GridStatusClient(return_format='python')
 data = client.get_dataset('isone_fuel_mix', limit=3, verbose=False)
@@ -170,7 +170,7 @@ print(f'Type: {type(data)}')
 "
 
 # Test: requesting polars should raise MissingDependencyError
-uv run --python .venv-pandas/bin/python python -c "
+.venv-pandas/bin/python -c "
 from gridstatusio import GridStatusClient
 client = GridStatusClient(return_format='polars')
 "
@@ -187,14 +187,14 @@ uv venv .venv-polars
 uv pip install -e ".[polars]" --python .venv-polars/bin/python
 
 # Test: should default to python format (pandas not available)
-uv run --python .venv-polars/bin/python python -c "
+.venv-polars/bin/python -c "
 from gridstatusio import GridStatusClient
 client = GridStatusClient()
 print(f'Default format: {client.return_format}')
 "
 
 # Test: polars format should work
-uv run --python .venv-polars/bin/python python -c "
+.venv-polars/bin/python -c "
 from gridstatusio import GridStatusClient
 client = GridStatusClient(return_format='polars')
 data = client.get_dataset('isone_fuel_mix', limit=3, verbose=False)
@@ -202,7 +202,7 @@ print(f'Type: {type(data)}')
 "
 
 # Test: requesting pandas should raise MissingDependencyError
-uv run --python .venv-polars/bin/python python -c "
+.venv-polars/bin/python -c "
 from gridstatusio import GridStatusClient
 client = GridStatusClient(return_format='pandas')
 "
@@ -219,14 +219,14 @@ uv venv .venv-all
 uv pip install -e ".[all]" --python .venv-all/bin/python
 
 # Test: should default to pandas format
-uv run --python .venv-all/bin/python python -c "
+.venv-all/bin/python -c "
 from gridstatusio import GridStatusClient
 client = GridStatusClient()
 print(f'Default format: {client.return_format}')
 "
 
 # Test: all formats should work
-uv run --python .venv-all/bin/python python -c "
+.venv-all/bin/python -c "
 from gridstatusio import GridStatusClient
 
 client = GridStatusClient()
