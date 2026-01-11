@@ -21,18 +21,22 @@
 `gridstatusio` supports Python 3.10+. Install with uv or pip.
 
 ```bash
-# Minimal installation (returns Python objects - list of dicts)
+# Standard installation (includes pandas)
 uv pip install gridstatusio
 
-# With pandas support (returns pandas DataFrames)
-uv pip install gridstatusio[pandas]
-
-# With polars support (returns polars DataFrames)
+# With polars support (for polars DataFrames)
 uv pip install gridstatusio[polars]
 
 # With both pandas and polars
 uv pip install gridstatusio[all]
 ```
+
+### Dependencies
+
+| Package | Status | Description |
+|---------|--------|-------------|
+| pandas | Required | Installed by default, used for DataFrame returns |
+| polars | Optional | Install with `gridstatusio[polars]` for polars DataFrame support |
 
 ## Getting Started
 
@@ -85,12 +89,9 @@ data = client.get_dataset('ercot_fuel_mix', limit=100, return_format="python")
 
 ### Default Behavior
 
-If `return_format` is not specified:
+If `return_format` is not specified, the client returns **pandas DataFrames** by default.
 
-- Returns **pandas DataFrame** if pandas is installed
-- Returns **Python objects** (list of dicts) if pandas is not installed
-
-### Example: Python Format (No Dependencies)
+### Example: Python Format
 
 ```python
 from gridstatusio import GridStatusClient
@@ -117,6 +118,32 @@ df = client.get_dataset('ercot_fuel_mix', limit=100)
 # Returns a polars DataFrame
 print(type(df))  # <class 'polars.dataframe.frame.DataFrame'>
 ```
+
+### Using Without Pandas (Advanced)
+
+While pandas is a required dependency, the library uses lazy loading so pandas is only imported when actually needed. This allows advanced users to use the library without pandas in minimal environments:
+
+```bash
+# Install without dependencies (advanced usage only)
+uv pip install gridstatusio --no-deps
+
+# Then manually install only the required non-pandas dependencies
+uv pip install requests tqdm termcolor tabulate urllib3 setuptools idna certifi virtualenv ipykernel plotly
+```
+
+When using the library without pandas:
+
+```python
+from gridstatusio import GridStatusClient
+
+# Must explicitly set return_format="python" to avoid pandas import
+client = GridStatusClient(api_key="your_key", return_format="python")
+data = client.get_dataset('ercot_fuel_mix', limit=100)
+
+# Returns list of dicts - no pandas required
+```
+
+Note: If you don't specify `return_format="python"`, the client will attempt to use pandas and raise an error if it's not installed.
 
 ## Checking your API usage
 

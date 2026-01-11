@@ -38,8 +38,8 @@ def handle_date(
     Parameters:
         date: The date to parse (string, datetime, pd.Timestamp, or None)
         tz: Optional timezone for localization
-        use_pandas: If True and pandas available, use pandas for parsing.
-                   If False, return string/datetime without pandas processing.
+        use_pandas: If True, use pandas for parsing (for PANDAS/POLARS formats).
+                   If False, use basic datetime parsing (for PYTHON format).
 
     Returns:
         Processed date suitable for API request parameters

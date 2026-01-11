@@ -74,7 +74,7 @@ class GridStatusClient:
             return_format (str): The format to return data in. Options are "pandas",
                 "polars", or "python". "pandas" returns pandas DataFrames, "polars"
                 returns polars DataFrames, and "python" returns lists of dictionaries.
-                Defaults to "pandas" if pandas is installed, otherwise "python".
+                Defaults to "pandas" if installed, otherwise "python".
 
             max_retries (int): The maximum number of retries to attempt for retriable
                 errors (rate limits, server errors, network timeouts). Defaults to 4.
@@ -129,8 +129,7 @@ class GridStatusClient:
         """Validate that the requested return format is available.
 
         Raises:
-            MissingDependencyError: If the library for the requested format
-                is not installed.
+            MissingDependencyError: If the required library is not installed.
         """
         if return_format == ReturnFormat.PANDAS and not pandas_available():
             raise MissingDependencyError("pandas", "pandas")

@@ -1,7 +1,8 @@
 """Compatibility module for optional dependencies.
 
-This module provides lazy loading utilities for optional dependencies
-(pandas, polars) and clear error messages when they are not installed.
+This module provides lazy loading utilities for pandas and polars dependencies.
+Pandas is a required dependency but is lazily loaded to allow python-only usage
+without importing it. Polars is an optional dependency.
 """
 
 from typing import Any
@@ -12,7 +13,7 @@ _POLARS_AVAILABLE: bool | None = None
 
 
 class MissingDependencyError(ImportError):
-    """Raised when a required optional dependency is not installed."""
+    """Raised when a dependency is not installed."""
 
     def __init__(self, library: str, format_name: str):
         self.library = library
