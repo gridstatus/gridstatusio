@@ -31,12 +31,12 @@ polars = [
     "polars>=1.36.1",
 ]
 notebooks = [
-    "ipykernel>=6.30.0",
+    "notebook>=7.0.0",
     "plotly>=5.20.0",
 ]
 all = [
     "polars>=1.36.1",
-    "ipykernel>=6.30.0",
+    "notebook>=7.0.0",
     "plotly>=5.20.0",
 ]
 
@@ -56,7 +56,7 @@ dev-dependencies = [
     "pyright>=1.1.402,<2",
     # Include optional dependencies for testing
     "polars>=1.36.1",
-    "ipykernel>=6.30.0",
+    "notebook>=7.0.0",
     "plotly>=5.20.0",
 ]
 

@@ -34,14 +34,6 @@ uv pip install gridstatusio[notebooks]
 uv pip install gridstatusio[all]
 ```
 
-### Dependencies
-
-| Package | Status | Description |
-|---------|--------|-------------|
-| pandas | Required | Installed by default, used for DataFrame returns |
-| polars | Optional | Install with `gridstatusio[polars]` for polars DataFrame support |
-| ipykernel, plotly | Optional | Install with `gridstatusio[notebooks]` for running example notebooks |
-
 ## Getting Started
 
 * Sign up for a Grid Status account and get your API key from the [Settings page](https://www.gridstatus.io/settings/api)
