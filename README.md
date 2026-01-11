@@ -21,7 +21,17 @@
 `gridstatusio` supports Python 3.10+. Install with uv or pip.
 
 ```bash
+# Standard installation (includes pandas)
 uv pip install gridstatusio
+
+# With polars support (for polars DataFrames)
+uv pip install gridstatusio[polars]
+
+# With notebook support (for running example notebooks)
+uv pip install gridstatusio[notebooks]
+
+# With all optional dependencies
+uv pip install gridstatusio[all]
 ```
 
 ## Getting Started
@@ -31,7 +41,7 @@ uv pip install gridstatusio
 * You're now ready to start querying. List datasets with:
 
 ```python
-from gridstatusio.gs_client import GridStatusClient
+from gridstatusio import GridStatusClient
 client = GridStatusClient()
 
 data = client.get_dataset('ercot_fuel_mix', limit=100, start='2025-01-01', end='2025-01-02')
@@ -50,6 +60,86 @@ data = client.get_dataset('ercot_fuel_mix', limit=100, start='2025-01-01', end='
   - [CAISO April Net Load Analysis](Examples/4.%20CAISO%20April%20Net%20Load.ipynb)
   - [Stacked Net Load Visualization](Examples/5.%20Stacked%20Net%20Load%20Visualization.ipynb)
   - [Resample Data to Different Frequencies](Examples/6.%20Resampling%20Data.ipynb)
+
+## Return Formats
+
+The client supports three return formats for data: **pandas DataFrames**, **polars DataFrames**, and **Python objects** (list of dictionaries). You can specify the format at the client level or per-call.
+
+```python
+from gridstatusio import GridStatusClient
+
+# Set default format when creating the client
+client = GridStatusClient(return_format="pandas")  # or "polars" or "python"
+
+# Override format for a specific call
+data = client.get_dataset('ercot_fuel_mix', limit=100, return_format="python")
+```
+
+### Format Options
+
+| Format | Return Type | Description |
+|--------|------------|-------------|
+| `"pandas"` | `pd.DataFrame` | Pandas DataFrame with parsed datetime columns |
+| `"polars"` | `pl.DataFrame` | Polars DataFrame with parsed datetime columns |
+| `"python"` | `list[dict]` | List of dictionaries with datetime values as ISO8601 strings |
+
+### Default Behavior
+
+If `return_format` is not specified, the client returns **pandas DataFrames** by default.
+
+### Example: Python Format
+
+```python
+from gridstatusio import GridStatusClient
+
+client = GridStatusClient(return_format="python")
+data = client.get_dataset('ercot_fuel_mix', limit=5)
+
+# Returns a list of dictionaries
+# [
+#     {"interval_start_utc": "2025-01-01T00:00:00+00:00", "coal": 1234.5, ...},
+#     {"interval_start_utc": "2025-01-01T00:05:00+00:00", "coal": 1235.2, ...},
+#     ...
+# ]
+```
+
+### Example: Polars Format
+
+```python
+from gridstatusio import GridStatusClient
+
+client = GridStatusClient(return_format="polars")
+df = client.get_dataset('ercot_fuel_mix', limit=100)
+
+# Returns a polars DataFrame
+print(type(df))  # <class 'polars.dataframe.frame.DataFrame'>
+```
+
+### Using Without Pandas (Advanced)
+
+While pandas is a required dependency, the library uses lazy loading so pandas is only imported when actually needed. This allows advanced users to use the library without pandas in minimal environments:
+
+```bash
+# Install without dependencies (advanced usage only)
+uv pip install gridstatusio --no-deps
+
+# Then manually install only the required non-pandas dependencies
+uv pip install requests termcolor tabulate
+```
+
+When using the library without pandas:
+
+```python
+from gridstatusio import GridStatusClient
+
+# Must explicitly set return_format="python" to avoid pandas import
+client = GridStatusClient(api_key="your_key", return_format="python")
+data = client.get_dataset('ercot_fuel_mix', limit=100)
+
+# Returns list of dicts - no pandas required
+```
+
+Note: If you don't specify `return_format="python"`, the client will attempt to use pandas and raise an error if it's not installed.
 
 ## Checking your API usage
 

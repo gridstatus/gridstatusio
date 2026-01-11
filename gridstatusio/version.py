@@ -43,7 +43,7 @@ def check_for_update() -> None:
         )
         print(
             colored(
-                "\nWe recommend upgrading via the 'pip install --upgrade gridstatusio' command.",  # noqa: E501
+                "\nWe recommend upgrading via the 'uv pip install --upgrade gridstatusio' command.",  # noqa: E501
                 "red",
             ),
         )
