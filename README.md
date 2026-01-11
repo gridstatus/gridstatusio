@@ -27,7 +27,10 @@ uv pip install gridstatusio
 # With polars support (for polars DataFrames)
 uv pip install gridstatusio[polars]
 
-# With both pandas and polars
+# With notebook support (for running example notebooks)
+uv pip install gridstatusio[notebooks]
+
+# With all optional dependencies
 uv pip install gridstatusio[all]
 ```
 
@@ -37,6 +40,7 @@ uv pip install gridstatusio[all]
 |---------|--------|-------------|
 | pandas | Required | Installed by default, used for DataFrame returns |
 | polars | Optional | Install with `gridstatusio[polars]` for polars DataFrame support |
+| ipykernel, plotly | Optional | Install with `gridstatusio[notebooks]` for running example notebooks |
 
 ## Getting Started
 
@@ -128,7 +132,7 @@ While pandas is a required dependency, the library uses lazy loading so pandas i
 uv pip install gridstatusio --no-deps
 
 # Then manually install only the required non-pandas dependencies
-uv pip install requests tqdm termcolor tabulate urllib3 setuptools idna certifi virtualenv ipykernel plotly
+uv pip install requests termcolor tabulate
 ```
 
 When using the library without pandas:

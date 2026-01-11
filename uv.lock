@@ -341,23 +341,21 @@ name = "gridstatusio"
 version = "0.15.1"
 source = { editable = "." }
 dependencies = [
-    { name = "certifi" },
-    { name = "idna" },
-    { name = "ipykernel" },
     { name = "pandas" },
-    { name = "plotly" },
     { name = "requests" },
-    { name = "setuptools" },
     { name = "tabulate" },
     { name = "termcolor" },
-    { name = "tqdm" },
-    { name = "urllib3" },
-    { name = "virtualenv" },
 ]
 
 [package.optional-dependencies]
 all = [
+    { name = "ipykernel" },
+    { name = "plotly" },
     { name = "polars" },
+]
+notebooks = [
+    { name = "ipykernel" },
+    { name = "plotly" },
 ]
 polars = [
     { name = "polars" },
@@ -365,8 +363,10 @@ polars = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "ipykernel" },
     { name = "kaleido" },
     { name = "nbformat" },
+    { name = "plotly" },
     { name = "polars" },
     { name = "pre-commit" },
     { name = "pyright" },
@@ -378,27 +378,25 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "certifi", specifier = ">=2024.7.4,<2025" },
-    { name = "idna", specifier = "~=3.7" },
-    { name = "ipykernel", specifier = ">=6.30.0" },
+    { name = "ipykernel", marker = "extra == 'all'", specifier = ">=6.30.0" },
+    { name = "ipykernel", marker = "extra == 'notebooks'", specifier = ">=6.30.0" },
     { name = "pandas", specifier = ">=2.3.0" },
-    { name = "plotly", specifier = ">=5.20.0" },
+    { name = "plotly", marker = "extra == 'all'", specifier = ">=5.20.0" },
+    { name = "plotly", marker = "extra == 'notebooks'", specifier = ">=5.20.0" },
     { name = "polars", marker = "extra == 'all'", specifier = ">=1.36.1" },
     { name = "polars", marker = "extra == 'polars'", specifier = ">=1.36.1" },
     { name = "requests", specifier = ">=2.32.2,<3" },
-    { name = "setuptools", specifier = ">=70.0.0,<81" },
     { name = "tabulate", specifier = ">=0.9.0,<0.10" },
     { name = "termcolor", specifier = ">=3.2.0" },
-    { name = "tqdm", specifier = ">=4.66.3,<5" },
-    { name = "urllib3", specifier = ">=2.2.2,<3" },
-    { name = "virtualenv", specifier = ">=20.26.6,<21" },
 ]
-provides-extras = ["polars", "all"]
+provides-extras = ["polars", "notebooks", "all"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "ipykernel", specifier = ">=6.30.0" },
     { name = "kaleido", specifier = "==0.2.1" },
     { name = "nbformat", specifier = ">=5.1.3" },
+    { name = "plotly", specifier = ">=5.20.0" },
     { name = "polars", specifier = ">=1.36.1" },
     { name = "pre-commit", specifier = ">=4.2.0" },
     { name = "pyright", specifier = ">=1.1.402,<2" },
@@ -1320,15 +1318,6 @@ wheels = [
 ]
 
 [[package]]
-name = "setuptools"
-version = "80.9.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/18/5d/3bf57dcd21979b887f014ea83c24ae194cfcd12b9e0fda66b957c69d1fca/setuptools-80.9.0.tar.gz", hash = "sha256:f36b47402ecde768dbfafc46e8e4207b4360c654f1f3bb84475f0a28628fb19c", size = 1319958, upload-time = "2025-05-27T00:56:51.443Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/a3/dc/17031897dae0efacfea57dfd3a82fdd2a2aeb58e0ff71b77b87e44edc772/setuptools-80.9.0-py3-none-any.whl", hash = "sha256:062d34222ad13e0cc312a4c02d73f059e86a4acbfbdea8f8f76b28c99f306922", size = 1201486, upload-time = "2025-05-27T00:56:49.664Z" },
-]
-
-[[package]]
 name = "six"
 version = "1.17.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1435,18 +1424,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/e8/59/593bd0f40f7355806bf6573b47b8c22f8e1374c9b6fd03114bd6b7a3dcfd/tornado-6.5.2-cp39-abi3-win32.whl", hash = "sha256:c6f29e94d9b37a95013bb669616352ddb82e3bfe8326fccee50583caebc8a5f0", size = 445023, upload-time = "2025-08-08T18:26:56.677Z" },
     { url = "https://files.pythonhosted.org/packages/c7/2a/f609b420c2f564a748a2d80ebfb2ee02a73ca80223af712fca591386cafb/tornado-6.5.2-cp39-abi3-win_amd64.whl", hash = "sha256:e56a5af51cc30dd2cae649429af65ca2f6571da29504a07995175df14c18f35f", size = 445427, upload-time = "2025-08-08T18:26:57.91Z" },
     { url = "https://files.pythonhosted.org/packages/5e/4f/e1f65e8f8c76d73658b33d33b81eed4322fb5085350e4328d5c956f0c8f9/tornado-6.5.2-cp39-abi3-win_arm64.whl", hash = "sha256:d6c33dc3672e3a1f3618eb63b7ef4683a7688e7b9e6e8f0d9aa5726360a004af", size = 444456, upload-time = "2025-08-08T18:26:59.207Z" },
-]
-
-[[package]]
-name = "tqdm"
-version = "4.67.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "colorama", marker = "sys_platform == 'win32'" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/a8/4b/29b4ef32e036bb34e4ab51796dd745cdba7ed47ad142a9f4a1eb8e0c744d/tqdm-4.67.1.tar.gz", hash = "sha256:f8aef9c52c08c13a65f30ea34f4e5aac3fd1a34959879d7e59e63027286627f2", size = 169737, upload-time = "2024-11-24T20:12:22.481Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/d0/30/dc54f88dd4a2b5dc8a0279bdd7270e735851848b762aeb1c1184ed1f6b14/tqdm-4.67.1-py3-none-any.whl", hash = "sha256:26445eca388f82e72884e0d580d5464cd801a3ea01e63e5601bdff9ba6a48de2", size = 78540, upload-time = "2024-11-24T20:12:19.698Z" },
 ]
 
 [[package]]
