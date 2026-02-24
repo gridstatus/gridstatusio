@@ -25,7 +25,7 @@ def test_invalid_api_key():
 def test_uses_columns():
     dataset = "ercot_sced_gen_resource_60_day"
     one_column = "resource_name"
-    columns = ["interval_start_utc", "interval_end_utc", one_column]
+    columns = ["sced_timestamp_utc", one_column]
     limit = 100
     df = client.get_dataset(
         dataset=dataset,
