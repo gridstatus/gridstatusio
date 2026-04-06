@@ -1,8 +1,10 @@
 import logging
 import warnings
 from contextlib import contextmanager
+from datetime import datetime
+from typing import Any
 
-import pandas as pd
+from gridstatusio._compat import import_pandas
 
 
 def setup_gsio_logger(level: int = logging.DEBUG) -> logging.Logger:
@@ -27,10 +29,37 @@ logger = setup_gsio_logger()
 
 
 def handle_date(
-    date: str | pd.Timestamp | None,
+    date: str | datetime | Any | None,
     tz: str | None = None,
-) -> pd.Timestamp | None:
-    if date is None or pd.isna(date):
+    use_pandas: bool = True,
+) -> str | datetime | Any | None:
+    """Handle date parsing for API requests.
+
+    Parameters:
+        date: The date to parse (string, datetime, pd.Timestamp, or None)
+        tz: Optional timezone for localization
+        use_pandas: If True, use pandas for parsing (for PANDAS/POLARS formats).
+                   If False, use basic datetime parsing (for PYTHON format).
+
+    Returns:
+        Processed date suitable for API request parameters
+    """
+    if date is None:
+        return None
+
+    # For non-pandas mode, just validate and return the string/datetime
+    if not use_pandas:
+        if date == "today":
+            return datetime.now().strftime("%Y-%m-%d")
+        if isinstance(date, datetime):
+            return date.isoformat()
+        # Assume string is already in valid format
+        return date
+
+    # Pandas mode
+    pd = import_pandas()
+
+    if pd.isna(date):
         return None
 
     if date == "today":
@@ -40,10 +69,11 @@ def handle_date(
         date = pd.to_datetime(date)
 
     if tz:
-        if date.tzinfo is None:
-            date = date.tz_localize(tz)
+        # After pd.to_datetime(), date is a pandas Timestamp
+        if date.tzinfo is None:  # type: ignore[union-attr]
+            date = date.tz_localize(tz)  # type: ignore[union-attr]
         else:
-            date = date.tz_convert(tz)
+            date = date.tz_convert(tz)  # type: ignore[union-attr]
 
     return date
 
