@@ -87,8 +87,6 @@ class GridStatusClient:
         """
 
         if api_key is None:
-            import os
-
             api_key = os.environ.get("GRIDSTATUS_API_KEY")
 
         if api_key is None:
@@ -808,13 +806,7 @@ class GridStatusClient:
             # Extract the cursor to send in the next request for cursor pagination
             cursor = meta.get("cursor") if meta is not None else None
 
-            # Get length based on format
-            if effective_format == ReturnFormat.PYTHON:
-                page_len = len(page_data)
-            else:
-                page_len = len(page_data)
-
-            total_rows += page_len
+            total_rows += len(page_data)
 
             results.append(page_data)
 

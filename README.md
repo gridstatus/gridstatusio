@@ -81,7 +81,7 @@ data = client.get_dataset('ercot_fuel_mix', limit=100, return_format="python")
 |--------|------------|-------------|
 | `"pandas"` | `pd.DataFrame` | Pandas DataFrame with parsed datetime columns |
 | `"polars"` | `pl.DataFrame` | Polars DataFrame with parsed datetime columns |
-| `"python"` | `list[dict]` | List of dictionaries with datetime values as ISO8601 strings |
+| `"python"` | `list[dict]` | List of dictionaries with parsed datetime columns |
 
 ### Default Behavior
 
