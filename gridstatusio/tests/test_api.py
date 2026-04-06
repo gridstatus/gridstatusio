@@ -360,7 +360,7 @@ def test_uses_columns(client, return_format):
     check_data(data, return_format, columns=columns, length=limit)
 
     # No columns specified - should return all
-    ncols = 30
+    ncols = 43
     data = client.get_dataset(dataset=dataset, verbose=True, limit=limit)
     assert get_length(data) == limit
     assert len(get_columns(data)) == ncols, "Expected all columns"
