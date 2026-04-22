@@ -25,6 +25,7 @@ Follow the steps below and only output the final Report Out section.
      - **Return-type stability**: DataFrame columns/dtypes and order are part of the contract
 
 4. **Review the Diff**
+   - Before flagging a concern, weigh it against the PR's stated context — description, commit messages, inline comments. If the author's reasoning already addresses the concern, drop it.
    - Go file by file
    - Verify correctness and intent
    - Look for bugs, logic errors, regressions, and common AI-generated mistakes (unused abstractions, inconsistent naming, over-broad `except Exception`, dead code)
@@ -38,8 +39,8 @@ Follow the steps below and only output the final Report Out section.
    - Cite the relevant guideline / convention for each issue when applicable
 
 6. **Report Out**
-   - List all issues directly. NEVER add a higher-level summary of the review
-   - Pair each issue with a clear, actionable fix
-   - Order issues with sections by priority (blocking, important, nit) with global numbering so each issue can unambiguously be referenced
-   - At the end, list out each issue one by one with a concise (no more than 20 words) description, so the user can reply with numbers. Call this section "Next Steps". The last line should say "Which issue(s) do you want to fix first?".
-   - Propose architectural changes only if they materially improve maintainability
+   - Only include actual issues — omit anything the PR's description, commit messages, or inline comments already justify. No higher-level summary, no recap of what the PR does, no positive acknowledgments.
+   - Keep each issue to one or two sentences: the problem, then the fix.
+   - Order issues with sections by priority (blocking, important, nit) with global numbering so each issue can unambiguously be referenced. Omit any priority tier with no issues.
+   - At the end, list each issue one by one with a concise (no more than 20 words) description, so the user can reply with numbers. Call this section "Next Steps". The last line should say "Which issue(s) do you want to fix first?".
+   - Propose architectural changes only if they materially improve maintainability.
