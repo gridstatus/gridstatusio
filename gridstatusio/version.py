@@ -9,7 +9,10 @@ __version__ = "0.15.1"
 def get_latest_version() -> str:
     """Get the latest version of gridstatusio from PyPI"""
 
-    response = requests.get("https://pypi.org/pypi/gridstatusio/json")  # noqa: E501
+    response = requests.get(
+        "https://pypi.org/pypi/gridstatusio/json",
+        timeout=3,
+    )
     latest_version = response.json()["info"]["version"]
     return latest_version
 
@@ -31,7 +34,10 @@ def check_for_update() -> None:
     if os.getenv("GSIO_SKIP_VERSION_CHECK") == "true":
         return
 
-    latest = get_latest_version()
+    try:
+        latest = get_latest_version()
+    except Exception:
+        return
     if version_is_higher(latest, __version__):
         print(
             # make bold
