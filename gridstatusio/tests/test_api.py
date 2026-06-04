@@ -678,6 +678,7 @@ def test_resample_frequency(client, return_format):
             "solar",
             "wind",
             "wood",
+            "batteries",
         ],
     )
 
