@@ -1,15 +1,5 @@
 # Changelog
 
-## 0.16.0 - June 3, 2026
-
-### New Features
-
-- Negotiate brotli response compression. The client now advertises `br` in `Accept-Encoding` and decodes brotli responses transparently, so large data payloads come back roughly 40% smaller than gzip with no change to how you call the client.
-
-### Dependencies
-
-- Add `brotli` (`brotlicffi` on PyPy) as a dependency to enable brotli decoding
-
 ## 0.15.1 - December 3, 2025
 
 ### Bug Fixes
