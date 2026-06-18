@@ -20,10 +20,10 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
-    "requests>=2.32.2,<3",
-    "termcolor>=3.2.0",
+    "requests>=2.34.2,<3",
+    "termcolor>=3.3.0",
     "tabulate>=0.9.0,<0.10",
-    "pandas>=2.3.0",
+    "pandas>=2.3.3,<3",
     # Enables brotli content-negotiation: when a brotli decoder is installed,
     # urllib3 adds "br" to the default Accept-Encoding and decodes responses
     # transparently, so the large data payloads come back ~40% smaller than gzip
@@ -35,14 +35,14 @@ dependencies = [
 
 [project.optional-dependencies]
 polars = [
-    "polars>=1.36.1",
+    "polars>=1.41.2",
 ]
 notebooks = [
     "notebook>=7.0.0",
     "plotly>=5.20.0",
 ]
 all = [
-    "polars>=1.36.1",
+    "polars>=1.41.2",
     "notebook>=7.0.0",
     "plotly>=5.20.0",
 ]
@@ -62,7 +62,7 @@ dev-dependencies = [
     "ruff>=0.5.0,<0.6",
     "pyright>=1.1.402,<2",
     # Include optional dependencies for testing
-    "polars>=1.36.1",
+    "polars>=1.41.2",
     "notebook>=7.0.0",
     "plotly>=5.20.0",
 ]
