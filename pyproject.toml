@@ -38,13 +38,13 @@ polars = [
     "polars>=1.36.1",
 ]
 notebooks = [
-    "notebook>=7.6.0",
-    "plotly>=6.8.0",
+    "notebook>=7.0.0",
+    "plotly>=5.20.0",
 ]
 all = [
     "polars>=1.36.1",
-    "notebook>=7.6.0",
-    "plotly>=6.8.0",
+    "notebook>=7.0.0",
+    "plotly>=5.20.0",
 ]
 
 [project.urls]
