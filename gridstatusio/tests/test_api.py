@@ -874,10 +874,16 @@ def test_pagination(client, return_format):
         client.get_dataset(dataset=dataset, page_size=10**10)
 
 
+# Query yesterday rather than today so the daily peak report always has settled
+# data. Requesting the current date fails when the market day has not produced any
+# intervals yet (the API returns "max() iterable argument is empty").
+yesterday = datetime.now() - timedelta(days=1)
+
+
 @pytest.mark.parametrize(
     "iso,market_date,expected_date",
     [
-        ("ERCOT", None, datetime.now().strftime("%Y-%m-%d")),
+        ("ERCOT", yesterday, yesterday.strftime("%Y-%m-%d")),
         ("CAISO", "2024-07-01", "2024-07-01"),
         ("spp", datetime(2024, 7, 10), "2024-07-10"),
     ],
