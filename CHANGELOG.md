@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.16.0 - June 21, 2026
+
+### New Features
+
+- Add optional return formats to `GridStatusClient`: choose between Pandas DataFrames (default), Polars DataFrames, or Python lists of dicts via the `return_format` parameter, set once on the client or per API call. `polars` is an optional dependency, and `return_format="python"` works without importing pandas thanks to lazy loading.
+- Add support for Python 3.14.
+
+### Dependencies
+
+- Add `brotli` (`brotlicffi` on PyPy) to negotiate Brotli response compression, decoding payloads roughly 40% smaller than gzip transparently with no changes to the request path.
+
+### Documentation
+
+- Update the free plan row limit to 500k/month in the README.
+
 ## 0.15.1 - December 3, 2025
 
 ### Bug Fixes
