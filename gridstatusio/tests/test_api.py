@@ -385,6 +385,14 @@ def test_list_datasets(client, return_format):
     assert isinstance(datasets, list), "Expected a list of datasets"
     assert len(datasets) > 0, "Expected at least one dataset"
 
+    fuel_mix_datasets = [
+        dataset for dataset in datasets if dataset["id"] == "ercot_fuel_mix"
+    ]
+    assert len(fuel_mix_datasets) == 1
+    earliest = fuel_mix_datasets[0]["earliest_available_time_utc"]
+    assert isinstance(earliest, datetime), "Expected timestamps parsed as datetime"
+    assert earliest.tzinfo is not None, "Expected timestamps timezone-aware"
+
 
 def test_list_datasets_filter(client, return_format):
     """Test filtering datasets."""

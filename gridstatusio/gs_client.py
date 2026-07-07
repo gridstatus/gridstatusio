@@ -6,7 +6,7 @@ import time
 import warnings
 from datetime import datetime
 from enum import Enum
-from typing import Any, cast
+from typing import Any, TypedDict, cast
 
 import requests
 from requests.exceptions import ConnectionError, Timeout
@@ -32,6 +32,48 @@ class ReturnFormat(str, Enum):
     PYTHON = "python"
 
 
+class DatasetColumn(TypedDict):
+    """A column entry in a dataset's all_columns metadata."""
+
+    name: str
+    type: str
+    is_numeric: bool
+    is_date: bool
+    is_datetime: bool
+
+
+class DatasetMetadata(TypedDict):
+    """Metadata for a dataset, as returned by GET /v1/datasets/{dataset_id}
+    and GET /v1/datasets/.
+
+    Timestamp fields (keys ending in "_utc") are parsed into timezone-aware
+    datetime objects by the client.
+    """
+
+    id: str
+    name: str
+    description: str | None
+    source: str
+    source_url: str | None
+    earliest_available_time_utc: datetime | None
+    latest_available_time_utc: datetime | None
+    last_checked_time_utc: datetime | None
+    created_at_utc: datetime | None
+    primary_key_columns: list[str]
+    time_index_column: str | None
+    publish_time_column: str | None
+    subseries_index_column: str | None
+    all_columns: list[DatasetColumn]
+    number_of_rows_approximate: int
+    table_type: str | None
+    data_frequency: str | None
+    publication_frequency: str | None
+    is_in_snowflake: bool
+    is_published: bool
+    status: str
+    popularity_rank: int | None
+
+
 # Define retriable HTTP status codes
 RETRIABLE_STATUS_CODES = {
     429,  # Too Many Requests
@@ -48,7 +90,7 @@ RETRIABLE_EXCEPTIONS = (
 )
 
 
-def _parse_metadata_timestamps(metadata: dict[str, Any]) -> dict[str, Any]:
+def _parse_metadata_timestamps(metadata: dict[str, Any]) -> DatasetMetadata:
     """Parse top-level ISO 8601 string values whose keys end in "_utc"
     into timezone-aware datetime objects. Leaves unparseable values as-is."""
     for key, value in metadata.items():
@@ -58,7 +100,14 @@ def _parse_metadata_timestamps(metadata: dict[str, Any]) -> dict[str, Any]:
                 metadata[key] = datetime.fromisoformat(value.replace("Z", "+00:00"))
             except ValueError:
                 pass
-    return metadata
+    return cast(DatasetMetadata, metadata)
+
+
+def _format_timestamp_for_display(value: datetime | None) -> str:
+    """Format a parsed timestamp back to an ISO 8601 string for display."""
+    if isinstance(value, datetime):
+        return value.isoformat()
+    return str(value)
 
 
 class GridStatusClient:
@@ -512,7 +561,7 @@ class GridStatusClient:
         self,
         filter_term: str | None = None,
         return_list: bool = False,
-    ) -> list[dict] | None:
+    ) -> list[DatasetMetadata] | None:
         """List available datasets from the API,
         with optional filter and return list option.
 
@@ -523,8 +572,10 @@ class GridStatusClient:
                 the filtered datasets as a list. Defaults to False.
 
         Returns:
-            list, None: The filtered datasets as a list if
-                return_list is set to True, otherwise None.
+            list[DatasetMetadata], None: The filtered datasets as a list if
+                return_list is set to True, otherwise None. Timestamp fields
+                (keys ending in "_utc") are parsed into timezone-aware
+                datetime objects.
         """
         url = f"{self.host}/datasets/"
 
@@ -534,12 +585,12 @@ class GridStatusClient:
             return_format=ReturnFormat.PYTHON,
         )
 
-        matched_datasets = []
+        datasets = [_parse_metadata_timestamps(dataset) for dataset in result]
 
-        for dataset in result:
-            dataset_description = dataset.get("description", "")
-            if dataset_description is None:
-                dataset_description = ""
+        matched_datasets: list[DatasetMetadata] = []
+
+        for dataset in datasets:
+            dataset_description = dataset["description"] or ""
             if filter_term is None or (
                 filter_term.lower() in dataset["id"].lower()
                 or filter_term.lower() in dataset["name"].lower()
@@ -555,22 +606,30 @@ class GridStatusClient:
                         ["Description", colored(dataset_description, "green")],
                         [
                             "Earliest available time (UTC)",
-                            colored(dataset["earliest_available_time_utc"], "blue"),
+                            colored(
+                                _format_timestamp_for_display(
+                                    dataset["earliest_available_time_utc"],
+                                ),
+                                "blue",
+                            ),
                         ],
                         [
                             "Latest available time (UTC)",
-                            colored(dataset["latest_available_time_utc"], "blue"),
+                            colored(
+                                _format_timestamp_for_display(
+                                    dataset["latest_available_time_utc"],
+                                ),
+                                "blue",
+                            ),
                         ],
                     ]
 
-                    num_rows = dataset.get("num_rows")
-                    all_columns = [
-                        col["name"] for col in dataset.get("all_columns", [])
-                    ]
+                    number_of_rows = dataset["number_of_rows_approximate"]
+                    all_columns = [column["name"] for column in dataset["all_columns"]]
 
-                    if num_rows is not None:
+                    if number_of_rows is not None:
                         dataset_table.append(
-                            ["Number of rows", colored(num_rows, "red")],
+                            ["Number of rows", colored(str(number_of_rows), "red")],
                         )
                     if all_columns:
                         dataset_table.append(
@@ -594,17 +653,18 @@ class GridStatusClient:
         if return_list:
             return matched_datasets
 
-    def get_dataset_metadata(self, dataset_id: str) -> dict[str, Any]:
+    def get_dataset_metadata(self, dataset_id: str) -> DatasetMetadata:
         """Retrieve metadata for a single dataset.
 
         Parameters:
             dataset_id (str): The dataset id, e.g. "ercot_fuel_mix".
 
         Returns:
-            dict: The metadata payload from GET /v1/datasets/{dataset_id},
-                regardless of the client's return_format or request_format.
-                Top-level timestamp fields (keys ending in "_utc") are parsed
-                into timezone-aware datetime objects.
+            DatasetMetadata: The metadata payload from
+                GET /v1/datasets/{dataset_id}, regardless of the client's
+                return_format or request_format. Top-level timestamp fields
+                (keys ending in "_utc") are parsed into timezone-aware
+                datetime objects.
         """
         url = f"{self.host}/datasets/{dataset_id}"
         metadata = cast(
