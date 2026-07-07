@@ -385,6 +385,14 @@ def test_list_datasets(client, return_format):
     assert isinstance(datasets, list), "Expected a list of datasets"
     assert len(datasets) > 0, "Expected at least one dataset"
 
+    fuel_mix_datasets = [
+        dataset for dataset in datasets if dataset["id"] == "ercot_fuel_mix"
+    ]
+    assert len(fuel_mix_datasets) == 1
+    earliest = fuel_mix_datasets[0]["earliest_available_time_utc"]
+    assert isinstance(earliest, datetime), "Expected timestamps parsed as datetime"
+    assert earliest.tzinfo is not None, "Expected timestamps timezone-aware"
+
 
 def test_list_datasets_filter(client, return_format):
     """Test filtering datasets."""
@@ -396,6 +404,45 @@ def test_list_datasets_filter(client, return_format):
 
     assert datasets is not None, f"No datasets returned for filter term '{filter_term}'"
     assert len(datasets) >= min_results, f"Expected at least {min_results} results"
+
+
+def test_get_dataset_metadata(client, return_format):
+    """Test getting metadata for a single dataset across all return formats."""
+    metadata = client.get_dataset_metadata("ercot_fuel_mix")
+
+    assert isinstance(metadata, dict), "Expected metadata to be a dict"
+    assert metadata["id"] == "ercot_fuel_mix"
+    for expected_key in [
+        "name",
+        "description",
+        "earliest_available_time_utc",
+        "latest_available_time_utc",
+        "all_columns",
+    ]:
+        assert expected_key in metadata, f"Expected key '{expected_key}' in metadata"
+
+    for timestamp_key in [
+        "earliest_available_time_utc",
+        "latest_available_time_utc",
+    ]:
+        value = metadata[timestamp_key]
+        assert isinstance(value, datetime), f"Expected '{timestamp_key}' as datetime"
+        assert value.tzinfo is not None, f"Expected '{timestamp_key}' timezone-aware"
+
+
+def test_get_dataset_metadata_csv_request_format():
+    """Test that metadata is a dict even when the client requests CSV."""
+    csv_client = gs.GridStatusClient(api_key=API_KEY, host=HOST, request_format="csv")
+    metadata = csv_client.get_dataset_metadata("ercot_fuel_mix")
+
+    assert isinstance(metadata, dict), "Expected metadata to be a dict"
+    assert metadata["id"] == "ercot_fuel_mix"
+
+
+def test_get_dataset_metadata_invalid_dataset(pandas_client):
+    """Test that an invalid dataset id raises an error."""
+    with pytest.raises(Exception):
+        pandas_client.get_dataset_metadata("not_a_real_dataset")
 
 
 def test_set_api_works(return_format):
