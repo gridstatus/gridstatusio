@@ -49,6 +49,20 @@ data = client.get_dataset('ercot_fuel_mix', limit=100, start='2025-01-01', end='
 
 * To see all available datasets, use `client.list_datasets()` or check out the complete Grid Status catalog at https://www.gridstatus.io/datasets
 
+* To get metadata for a single dataset (description, available time range, columns, and more), use `client.get_dataset_metadata()`. It always returns a dictionary, with timestamp fields parsed into timezone-aware datetimes:
+
+```python
+metadata = client.get_dataset_metadata("ercot_fuel_mix")
+
+# {
+#     "id": "ercot_fuel_mix",
+#     "name": "ERCOT Fuel Mix",
+#     "earliest_available_time_utc": datetime(2017, 1, 1, 6, 0, tzinfo=timezone.utc),
+#     "all_columns": [{"name": "interval_start_utc", ...}, ...],
+#     ...
+# }
+```
+
 * **NOTE**: the Grid Status API has a 500,000 rows per month limit on the free plan. This limit is _very_ easy to exceed when querying data, especially real time prices.
   * Make sure to add `limit` to all of your `get_dataset` calls to avoid quickly exceeding the limit.
 

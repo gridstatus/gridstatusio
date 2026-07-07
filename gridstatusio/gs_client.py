@@ -48,6 +48,19 @@ RETRIABLE_EXCEPTIONS = (
 )
 
 
+def _parse_metadata_timestamps(metadata: dict[str, Any]) -> dict[str, Any]:
+    """Parse top-level ISO 8601 string values whose keys end in "_utc"
+    into timezone-aware datetime objects. Leaves unparseable values as-is."""
+    for key, value in metadata.items():
+        if key.endswith("_utc") and isinstance(value, str):
+            try:
+                # Python 3.10's fromisoformat does not accept the "Z" suffix
+                metadata[key] = datetime.fromisoformat(value.replace("Z", "+00:00"))
+            except ValueError:
+                pass
+    return metadata
+
+
 class GridStatusClient:
     def __init__(
         self,
@@ -580,6 +593,31 @@ class GridStatusClient:
 
         if return_list:
             return matched_datasets
+
+    def get_dataset_metadata(self, dataset_id: str) -> dict[str, Any]:
+        """Retrieve metadata for a single dataset.
+
+        Parameters:
+            dataset_id (str): The dataset id, e.g. "ercot_fuel_mix".
+
+        Returns:
+            dict: The metadata payload from GET /v1/datasets/{dataset_id},
+                regardless of the client's return_format or request_format.
+                Top-level timestamp fields (keys ending in "_utc") are parsed
+                into timezone-aware datetime objects.
+        """
+        url = f"{self.host}/datasets/{dataset_id}"
+        metadata = cast(
+            dict[str, Any],
+            self.get(
+                url,
+                # Pin JSON so a client configured with request_format="csv"
+                # still receives a JSON payload
+                params={"return_format": "json"},
+                return_raw_response_json=True,
+            ),
+        )
+        return _parse_metadata_timestamps(metadata)
 
     def get_dataset(
         self,
