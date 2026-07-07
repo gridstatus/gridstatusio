@@ -49,7 +49,7 @@ data = client.get_dataset('ercot_fuel_mix', limit=100, start='2025-01-01', end='
 
 * To see all available datasets, use `client.list_datasets()` or check out the complete Grid Status catalog at https://www.gridstatus.io/datasets
 
-* To get metadata for a single dataset (description, available time range, columns, and more), use `client.get_dataset_metadata()`. It always returns a dictionary, with timestamp fields parsed into timezone-aware datetimes:
+* To get metadata for a single dataset (description, available time range, columns, and more), use `client.get_dataset_metadata(dataset_id)`. It always returns a dictionary, with timestamp fields parsed into timezone-aware datetimes:
 
 ```python
 metadata = client.get_dataset_metadata("ercot_fuel_mix")
