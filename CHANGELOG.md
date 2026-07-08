@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.16.0 - July 7, 2026
+
+### New Features
+
+- Add optional return formats to `GridStatusClient`: choose between Pandas DataFrames (default), Polars DataFrames, or Python lists of dicts via the `return_format` parameter, set once on the client or per API call. `polars` is an optional dependency, and `return_format="python"` works without importing pandas thanks to lazy loading.
+- Add support for Python 3.14.
+- Add `get_dataset_metadata()` method to `GridStatusClient` for retrieving metadata for a single dataset (description, available time range, columns, and more). Returns a `DatasetMetadata` typed dict regardless of the client's `return_format` or `request_format`, with timestamp fields parsed into timezone-aware `datetime` objects.
+- `list_datasets(return_list=True)` now returns typed `DatasetMetadata` entries with timestamp fields (keys ending in `_utc`) parsed into timezone-aware `datetime` objects instead of ISO 8601 strings. The `DatasetMetadata` and `DatasetColumn` types are importable from the package root.
+
+### Dependencies
+
+- Add `brotli` (`brotlicffi` on PyPy) to negotiate Brotli response compression, decoding payloads roughly 40% smaller than gzip transparently with no changes to the request path.
+
+### Documentation
+
+- Update the free plan row limit to 500k/month in the README.
+
 ## 0.15.1 - December 3, 2025
 
 ### Bug Fixes
