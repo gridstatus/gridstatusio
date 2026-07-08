@@ -1,5 +1,15 @@
 # Changelog
 
+## v.Next
+
+### Documentation
+
+- Rewrote the README around the hosted API quickstart, hosted-vs-open-source comparison, return formats, usage stats, and documentation resources; enriched PyPI metadata with a clearer description, expanded keywords, fuller Trove classifiers, corrected project URLs (`gridstatus` org), and Documentation/Data Catalog/Changes links (#110)
+
+### Packaging
+
+- Ship a `py.typed` marker (PEP 561) so downstream type checkers consume the package's type hints (#110)
+
 ## 0.16.0 - July 7, 2026
 
 ### New Features
