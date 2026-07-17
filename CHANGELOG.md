@@ -1,5 +1,11 @@
 # Changelog
 
+## v.Next
+
+### Packaging
+
+- Ship a `py.typed` marker (PEP 561) so downstream type checkers consume the package's type hints (#110)
+
 ## 0.16.0 - July 7, 2026
 
 ### New Features

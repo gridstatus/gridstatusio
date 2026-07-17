@@ -1,7 +1,7 @@
 [project]
 name = "gridstatusio"
 version = "0.16.0"
-description = "Python Client for GridStatus.io API"
+description = "Python client for the GridStatus.io API: normalized electricity market data (load, fuel mix, LMPs, forecasts) from every North American ISO through a single REST API."
 authors = [{ name = "Max Kanter", email = "kmax12@gmail.com" }]
 requires-python = ">=3.10, <4"
 readme = "README.md"
@@ -9,9 +9,36 @@ license.file = "LICENSE"
 maintainers = [{ name = "Max Kanter", email = "kmax12@gmail.com" }]
 keywords = [
     "energy",
+    "electricity",
+    "power grid",
     "independent system operator",
+    "ISO",
+    "RTO",
+    "CAISO",
+    "ERCOT",
+    "PJM",
+    "MISO",
+    "SPP",
+    "NYISO",
+    "ISO-NE",
+    "IESO",
+    "AESO",
+    "EIA",
+    "LMP",
+    "electricity prices",
+    "energy markets",
+    "time series",
+    "grid data",
+    "API client",
 ]
 classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
@@ -48,8 +75,12 @@ all = [
 ]
 
 [project.urls]
-"Source Code" = "https://github.com/kmax12/gridstatusio/"
-"Issue Tracker" = "https://github.com/kmax12/gridstatusio/issues"
+"Homepage" = "https://www.gridstatus.io/"
+"Documentation" = "https://www.gridstatus.io/api"
+"Data Catalog" = "https://www.gridstatus.io/datasets"
+"Source Code" = "https://github.com/gridstatus/gridstatusio/"
+"Changes" = "https://github.com/gridstatus/gridstatusio/blob/main/CHANGELOG.md"
+"Issue Tracker" = "https://github.com/gridstatus/gridstatusio/issues"
 
 [tool.uv]
 dev-dependencies = [
