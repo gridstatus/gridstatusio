@@ -14,7 +14,7 @@
 
 `gridstatusio` is a Python client for the [GridStatus.io Hosted API](https://www.gridstatus.io/api), which provides historical and real-time electricity market data from North American ISOs through a single REST API.
 
-Available datasets cover load and demand, fuel and generation mix, locational marginal prices (LMPs), interchange, ancillary services, and more.
+Available datasets cover load and demand, fuel and generation mix, forecasts, locational marginal prices (LMPs), interchange, ancillary services, and more.
 
 Browse 500+ datasets in the [Data Catalog](https://www.gridstatus.io/datasets).
 
