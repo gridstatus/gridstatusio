@@ -14,19 +14,29 @@
 
 `gridstatusio` is a Python client for the [GridStatus.io Hosted API](https://www.gridstatus.io/api), which provides historical and real-time electricity market data from North American ISOs through a single REST API.
 
-Available datasets cover load and demand, fuel and generation mix, forecasts, locational marginal prices (LMPs), interchange, ancillary services, and more.
-
-Browse 500+ datasets in the [Data Catalog](https://www.gridstatus.io/datasets).
+Available datasets cover load and demand, fuel and generation mix, forecasts, locational marginal prices (LMPs), interchange, ancillary services, and more. Browse 500+ datasets in the [Data Catalog](https://www.gridstatus.io/datasets).
 
 ## Contents
 
-- [Installation](#installation)
 - [Why the hosted API?](#why-the-hosted-api)
-- [Quick example](#quick-example)
+- [Installation](#installation)
 - [Getting started](#getting-started)
 - [Return formats](#return-formats)
 - [API usage](#checking-your-api-usage)
 - [More examples](#more-examples)
+
+## Why the hosted API?
+
+The hosted API differs from the open-source [`gridstatus`](https://github.com/gridstatus/gridstatus) library in several ways:
+
+| Hosted API | Open-source `gridstatus` |
+|------------|--------------------------|
+| Consistent column names, timestamp formats, and DST handling | Raw data directly from ISO sources |
+| Single REST API | Source-specific integrations |
+| Historical data queryable immediately | Historical availability depends on each source's retention policy |
+| Server-side filtering by time, columns, and supported field values, including `=` and `in` filters | Filtering depends on each source |
+
+Use the open-source library when you want raw data directly from the ISOs with no account. Use this client when you want normalized, hosted data through a single API with support for paid subscriptions.
 
 ## Installation
 
@@ -46,38 +56,12 @@ uv pip install gridstatusio[notebooks]
 uv pip install gridstatusio[all]
 ```
 
-## Why the hosted API?
-
-The hosted API differs from the open-source [`gridstatus`](https://github.com/gridstatus/gridstatus) library in several ways:
-
-| Hosted API | Open-source `gridstatus` |
-|------------|--------------------------|
-| Consistent column names, timestamp formats, and DST handling | Raw data directly from ISO sources |
-| Single REST API | Source-specific integrations |
-| Historical data queryable immediately | Historical availability depends on each source's retention policy |
-| Server-side filtering by time, columns, and supported field values, including `=` and `in` filters | Filtering depends on each source |
-
-Use the open-source library when you want raw data directly from the ISOs with no account. Use this client when you want normalized, hosted data through a single API with support for paid subscriptions.
-
-## Quick example
-
-```python
-from gridstatusio import GridStatusClient
-
-client = GridStatusClient(api_key="<your_api_key>")
-df = client.get_dataset(
-    "ercot_fuel_mix",
-    start="2024-06-01",
-    end="2024-06-02",
-    limit=1000,
-)
-```
-
 ## Getting started
 
 1. **Get an API key.** Sign up for a Grid Status account and copy your key from the [Settings page](https://www.gridstatus.io/settings/api).
 2. **Provide the key.** Set `export GRIDSTATUS_API_KEY=your_api_key`, or pass it directly: `GridStatusClient(api_key="<your_api_key>")`.
 3. **Find a dataset.** Call `client.list_datasets()` or browse the [Data Catalog](https://www.gridstatus.io/datasets).
+4. **Query the dataset.** Call `client.get_dataset(...)` with the dataset ID and desired time range.
 
 ```python
 from gridstatusio import GridStatusClient
@@ -85,6 +69,13 @@ from gridstatusio import GridStatusClient
 client = GridStatusClient()  # reads GRIDSTATUS_API_KEY from the environment
 
 client.list_datasets()
+
+df = client.get_dataset(
+    "ercot_fuel_mix",
+    start="2024-06-01",
+    end="2024-06-02",
+    limit=1000,
+)
 ```
 
 ### Dataset metadata
