@@ -18,7 +18,15 @@ Available datasets cover load and demand, fuel and generation mix, forecasts, lo
 
 Browse 500+ datasets in the [Data Catalog](https://www.gridstatus.io/datasets).
 
-Contents: [Installation](#installation) · [Why the hosted API?](#why-the-hosted-api) · [Quick example](#quick-example) · [Getting started](#getting-started) · [Return formats](#return-formats) · [API usage](#checking-your-api-usage) · [More examples](#more-examples)
+## Contents
+
+- [Installation](#installation)
+- [Why the hosted API?](#why-the-hosted-api)
+- [Quick example](#quick-example)
+- [Getting started](#getting-started)
+- [Return formats](#return-formats)
+- [API usage](#checking-your-api-usage)
+- [More examples](#more-examples)
 
 ## Installation
 
@@ -49,7 +57,7 @@ The hosted API differs from the open-source [`gridstatus`](https://github.com/gr
 | Historical data queryable immediately | You build and maintain your own archive |
 | Server-side filtering by time, columns, and supported field values, including `=` and `in` filters | Filtering depends on each source |
 
-Use the open-source library when you want raw data directly from the ISOs with no account. Use this client when you want normalized, hosted data through a single API. See [pricing](https://www.gridstatus.io/pricing).
+Use the open-source library when you want raw data directly from the ISOs with no account. Use this client when you want normalized, hosted data through a single API with support for paid subscriptions.
 
 ## Quick example
 
