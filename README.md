@@ -52,9 +52,9 @@ The hosted API differs from the open-source [`gridstatus`](https://github.com/gr
 
 | Hosted API | Open-source `gridstatus` |
 |------------|--------------------------|
-| Normalized data with consistent column names, timestamp formats, and DST handling where the underlying data supports it | Raw data directly from ISO sources |
+| Consistent column names, timestamp formats, and DST handling | Raw data directly from ISO sources |
 | Single REST API | Source-specific integrations |
-| Historical data queryable immediately | You build and maintain your own archive |
+| Historical data queryable immediately | Historical availability depends on each source's retention policy |
 | Server-side filtering by time, columns, and supported field values, including `=` and `in` filters | Filtering depends on each source |
 
 Use the open-source library when you want raw data directly from the ISOs with no account. Use this client when you want normalized, hosted data through a single API with support for paid subscriptions.
