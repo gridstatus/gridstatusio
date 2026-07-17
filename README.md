@@ -14,11 +14,11 @@
 
 `gridstatusio` is a Python client for the [GridStatus.io Hosted API](https://www.gridstatus.io/api), which provides historical and real-time electricity market data from North American ISOs through a single REST API.
 
-Browse available datasets in the [Data Catalog](https://www.gridstatus.io/datasets).
+Available datasets cover load and demand, fuel and generation mix, locational marginal prices (LMPs), interchange, ancillary services, and more.
 
-Common workflows include market analysis, forecasting, backtesting, asset valuation, and ML.
+Browse 500+ datasets in the [Data Catalog](https://www.gridstatus.io/datasets).
 
-Contents: [Installation](#installation) · [Quick example](#quick-example) · [Why the hosted API?](#why-the-hosted-api) · [Getting started](#getting-started) · [Return formats](#return-formats) · [API usage](#checking-your-api-usage) · [More examples](#more-examples)
+Contents: [Installation](#installation) · [Why the hosted API?](#why-the-hosted-api) · [Quick example](#quick-example) · [Getting started](#getting-started) · [Return formats](#return-formats) · [API usage](#checking-your-api-usage) · [More examples](#more-examples)
 
 ## Installation
 
@@ -38,6 +38,19 @@ uv pip install gridstatusio[notebooks]
 uv pip install gridstatusio[all]
 ```
 
+## Why the hosted API?
+
+The hosted API differs from the open-source [`gridstatus`](https://github.com/gridstatus/gridstatus) library in several ways:
+
+| Hosted API | Open-source `gridstatus` |
+|------------|--------------------------|
+| Normalized data with consistent column names, timestamp formats, and DST handling where the underlying data supports it | Raw data directly from ISO sources |
+| Single REST API | Source-specific integrations |
+| Historical data queryable immediately | You build and maintain your own archive |
+| Server-side filtering by time, columns, and supported field values, including `=` and `in` filters | Filtering depends on each source |
+
+Use the open-source library when you want raw data directly from the ISOs with no account. Use this client when you want normalized, hosted data through a single API. See [pricing](https://www.gridstatus.io/pricing).
+
 ## Quick example
 
 ```python
@@ -51,19 +64,6 @@ df = client.get_dataset(
     limit=1000,
 )
 ```
-
-## Why the hosted API?
-
-The hosted API differs from the open-source [`gridstatus`](https://github.com/gridstatus/gridstatus) library in several ways:
-
-| Hosted API | Open-source `gridstatus` |
-|------------|--------------------------|
-| Normalized data with consistent column names, timestamp formats, and DST handling where the underlying data supports it | Raw data directly from ISO sources |
-| Single REST API | Source-specific integrations |
-| Historical data queryable immediately | You build and maintain your own archive |
-| Server-side filtering by time, columns, and supported field values, including `=` and `in` filters | Filtering depends on each source |
-
-Use the open-source library when you want raw data directly from the ISOs with no account. Use this client when you want normalized, hosted data through a single API. See [pricing](https://www.gridstatus.io/pricing).
 
 ## Getting started
 
