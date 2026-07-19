@@ -120,6 +120,7 @@ class GridStatusClient:
         max_retries: int = 5,
         base_delay: float = 2.0,
         exponential_base: float = 2.0,
+        timeout: float | None = 30.0,
     ):
         """Create a GridStatus.io API client
 
@@ -146,6 +147,10 @@ class GridStatusClient:
 
             exponential_base (float): Base for exponential backoff calculation.
                 Defaults to 2.0.
+
+            timeout (float | None): Seconds to wait for a server response before
+                raising a Timeout exception. Applies to both connect and read.
+                Defaults to 30.0. Set to None to wait indefinitely.
         """
 
         if api_key is None:
@@ -164,6 +169,7 @@ class GridStatusClient:
         self.max_retries = max_retries
         self.base_delay = base_delay
         self.exponential_base = exponential_base
+        self.timeout = timeout
 
         assert self.request_format in [
             "json",
@@ -453,7 +459,12 @@ class GridStatusClient:
 
         while retries <= self.max_retries:
             try:
-                response = requests.get(url, params=params, headers=headers)
+                response = requests.get(
+                    url,
+                    params=params,
+                    headers=headers,
+                    timeout=self.timeout,
+                )
 
                 if response.status_code == 200:
                     break
