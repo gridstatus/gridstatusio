@@ -90,7 +90,7 @@ dev-dependencies = [
     "pre-commit>=4.5.1",
     "kaleido==0.2.1",
     "nbformat>=5.10.4",
-    "ruff>=0.5.0,<0.6",
+    "ruff==0.16.0",
     "pyright>=1.1.407,<2",
     # Include optional dependencies for testing
     "polars>=1.36.1",
@@ -110,17 +110,30 @@ markers = [
 
 [tool.ruff]
 line-length = 88
-lint.ignore = []
-lint.select = [
-    # Pyflakes
+# ruff >=0.16 ships a broad curated default rule set
+# (https://docs.astral.sh/ruff/default-rules/). We inherit it and use
+# extend-select for the families enforced here that are not part of it, rather
+# than pinning our own select and missing future default additions.
+lint.extend-select = [
+    # Pyflakes in full (the default set carries only a subset)
     "F",
-    # Pycodestyle
+    # Pycodestyle in full (the default set carries only E722/E902)
     "E",
     "W",
     # flake8-quotes
     "Q",
     # isort
-    "I001"
+    "I001",
+]
+lint.ignore = [
+    # Class-level mutable defaults here are declarative config, not the shared-state
+    # bug this targets.
+    "RUF012",
+    # Nested `with` blocks read better than one merged statement for these.
+    "SIM117",
+    # Introducing a custom exception hierarchy is a separate change from adopting
+    # the ruleset.
+    "TRY002",
 ]
 src = ["gridstatusio"]
 
