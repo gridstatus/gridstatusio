@@ -475,7 +475,7 @@ class GridStatusClient:
             except RETRIABLE_EXCEPTIONS as e:
                 if retries >= self.max_retries:
                     raise Exception(
-                        f"Network error: {str(e)}. Exceeded maximum number of retries",
+                        f"Network error: {e!s}. Exceeded maximum number of retries",
                     )
                 _retry_delay_and_log(f"Network error ({type(e).__name__})")
                 retries += 1
@@ -1009,7 +1009,10 @@ class GridStatusClient:
             dict: The daily peak report as a dict.
         """
         if market_date is None:
-            market_date = datetime.today()
+            # Local, not UTC: the documented default is the caller's current date,
+            # and only the calendar date survives the strftime below. Using UTC
+            # would shift the default market day for callers west of UTC.
+            market_date = datetime.today()  # noqa: DTZ002
 
         if isinstance(market_date, datetime):
             market_date = market_date.strftime("%Y-%m-%d")

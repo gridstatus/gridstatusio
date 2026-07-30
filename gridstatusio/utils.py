@@ -50,7 +50,9 @@ def handle_date(
     # For non-pandas mode, just validate and return the string/datetime
     if not use_pandas:
         if date == "today":
-            return datetime.now().strftime("%Y-%m-%d")
+            # Local, not UTC: the caller asked for "today", which means their
+            # calendar date, and only the date survives the strftime.
+            return datetime.now().strftime("%Y-%m-%d")  # noqa: DTZ005
         if isinstance(date, datetime):
             return date.isoformat()
         # Assume string is already in valid format
