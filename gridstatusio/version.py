@@ -9,7 +9,7 @@ __version__ = "0.16.0"
 def get_latest_version() -> str:
     """Get the latest version of gridstatusio from PyPI"""
 
-    response = requests.get("https://pypi.org/pypi/gridstatusio/json")  # noqa: E501
+    response = requests.get("https://pypi.org/pypi/gridstatusio/json")
     latest_version = response.json()["info"]["version"]
     return latest_version
 
@@ -49,7 +49,7 @@ def check_for_update() -> None:
         )
         print(
             colored(
-                "\nSee the changelog here: https://github.com/gridstatus/gridstatusio/blob/main/CHANGELOG.md",  # noqa: E501
+                "\nSee the changelog here: https://github.com/gridstatus/gridstatusio/blob/main/CHANGELOG.md",
                 "red",
             ),
         )

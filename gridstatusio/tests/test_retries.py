@@ -33,7 +33,7 @@ def test_rate_limit_hit_backoff(mock_get_request, caplog):
         )
 
     log_messages = [record.message for record in caplog.records]
-    for i in range(0, client.max_retries):
+    for i in range(client.max_retries):
         expected_text = (
             f"Too Many Requests. Limit: 6 per 1 second. "
             f"Retrying in {1 * 2**i} seconds. "
@@ -58,7 +58,7 @@ def test_connection_error_backoff(mock_get_request, caplog):
         )
 
     log_messages = [record.message for record in caplog.records]
-    for i in range(0, client.max_retries):
+    for i in range(client.max_retries):
         expected_text = (
             f"Network error (ConnectionError). "
             f"Retrying in {1 * 2**i} seconds. "
