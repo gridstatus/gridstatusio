@@ -21,7 +21,8 @@ repos:
     rev: v0.10.1
     hooks:
       - id: validate-pyproject
-  # Keep this rev in sync with the ruff pin in pyproject.toml.
+  # This rev must match the exact ruff pin in pyproject.toml, which is what CI's
+  # `make lint` resolves through uv.lock.
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.16.0
     hooks:

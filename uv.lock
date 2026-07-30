@@ -636,7 +636,7 @@ dev = [
     { name = "pytest", specifier = ">=9.1.0" },
     { name = "pytest-rerunfailures", specifier = ">=16.3" },
     { name = "pytest-xdist", specifier = ">=3.8.0" },
-    { name = "ruff", specifier = "~=0.16" },
+    { name = "ruff", specifier = "==0.16.0" },
 ]
 
 [[package]]
