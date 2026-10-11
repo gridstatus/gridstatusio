@@ -48,30 +48,32 @@ classifiers = [
 ]
 dependencies = [
     "requests>=2.32.2,<3",
-    "termcolor>=3.2.0",
-    "tabulate>=0.9.0,<0.10",
-    "pandas>=2.3.0",
+    "termcolor>=3.2.0,<4",
+    "tabulate>=0.9.0,<0.11",
+    "pandas>=2.3.0,<4",
     # Enables brotli content-negotiation: when a brotli decoder is installed,
     # urllib3 adds "br" to the default Accept-Encoding and decodes responses
     # transparently, so the large data payloads come back ~40% smaller than gzip
     # with no client code changes. brotli is CPython-only; brotlicffi is its PyPy
-    # equivalent (this is the urllib3-recommended dependency split).
-    "brotli>=1.1.0; platform_python_implementation == 'CPython'",
-    "brotlicffi>=1.1.0; platform_python_implementation != 'CPython'",
+    # equivalent (this is the urllib3-recommended dependency split). 1.2.0 is the
+    # first release urllib3 can bound decompression output with; older versions
+    # emit a decompression-bomb DependencyWarning on every response.
+    "brotli>=1.2.0,<2; platform_python_implementation == 'CPython'",
+    "brotlicffi>=1.2.0,<2; platform_python_implementation != 'CPython'",
 ]
 
 [project.optional-dependencies]
 polars = [
-    "polars>=1.36.1",
+    "polars>=1.36.1,<3",
 ]
 notebooks = [
-    "notebook>=7.0.0",
-    "plotly>=5.20.0",
+    "notebook>=7.0.0,<8",
+    "plotly>=5.20.0,<7",
 ]
 all = [
-    "polars>=1.36.1",
-    "notebook>=7.0.0",
-    "plotly>=5.20.0",
+    "polars>=1.36.1,<3",
+    "notebook>=7.0.0,<8",
+    "plotly>=5.20.0,<7",
 ]
 
 [project.urls]
