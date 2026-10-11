@@ -40,4 +40,7 @@ def test_version_check_enabled():
     with patch("requests.get", return_value=mock_response) as mock_get:
         check_for_update()
 
-        mock_get.assert_called_once_with("https://pypi.org/pypi/gridstatusio/json")
+        mock_get.assert_called_once_with(
+            "https://pypi.org/pypi/gridstatusio/json",
+            timeout=3,
+        )
