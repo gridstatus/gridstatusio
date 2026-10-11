@@ -6,6 +6,10 @@
 
 - Ship a `py.typed` marker (PEP 561) so downstream type checkers consume the package's type hints (#110)
 
+### Dependencies
+
+- Cap each dependency below its next untested major version while keeping the existing minimums. `pandas` 3, `polars` 2 and `tabulate` 0.10 are now supported. `plotly` stays below 7 because the example notebooks export images with `kaleido` 0.2.1, which `plotly` 7 no longer supports. The `brotli` / `brotlicffi` minimum rises to 1.2.0, the first release urllib3 can use to bound decompressed output (#103)
+
 ## 0.16.0 - July 7, 2026
 
 ### New Features
