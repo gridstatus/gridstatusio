@@ -107,9 +107,7 @@ def get_unique_values(data: Any, column: str) -> list:
 
 def get_min(data: Any, column: str) -> Any:
     """Get min value for a column, regardless of format."""
-    if isinstance(data, pd.DataFrame):
-        return data[column].min()
-    elif isinstance(data, pl.DataFrame):
+    if isinstance(data, (pd.DataFrame, pl.DataFrame)):
         return data[column].min()
     elif isinstance(data, list):
         values = [v for v in get_column_values(data, column) if v is not None]
@@ -120,9 +118,7 @@ def get_min(data: Any, column: str) -> Any:
 
 def get_max(data: Any, column: str) -> Any:
     """Get max value for a column, regardless of format."""
-    if isinstance(data, pd.DataFrame):
-        return data[column].max()
-    elif isinstance(data, pl.DataFrame):
+    if isinstance(data, (pd.DataFrame, pl.DataFrame)):
         return data[column].max()
     elif isinstance(data, list):
         values = [v for v in get_column_values(data, column) if v is not None]
@@ -312,9 +308,7 @@ def check_data(
 
 def data_equals(data1: Any, data2: Any, return_format: str) -> bool:
     """Check if two datasets are equal."""
-    if return_format == ReturnFormat.PANDAS:
-        return data1.equals(data2)
-    elif return_format == ReturnFormat.POLARS:
+    if return_format == ReturnFormat.PANDAS or return_format == ReturnFormat.POLARS:
         return data1.equals(data2)
     elif return_format == ReturnFormat.PYTHON:
         return data1 == data2
@@ -441,7 +435,9 @@ def test_get_dataset_metadata_csv_request_format():
 
 def test_get_dataset_metadata_invalid_dataset(pandas_client):
     """Test that an invalid dataset id raises an error."""
-    with pytest.raises(Exception):
+    # The client raises bare Exception for API errors; narrowing this needs a custom
+    # exception hierarchy in the library (see the TRY002 note in pyproject.toml).
+    with pytest.raises(Exception):  # noqa: B017
         pandas_client.get_dataset_metadata("not_a_real_dataset")
 
 
@@ -917,14 +913,18 @@ def test_pagination(client, return_format):
     assert get_length(data) == 25
 
     # Test too large page size errors
-    with pytest.raises(Exception):
+    # The client raises bare Exception for API errors; narrowing this needs a custom
+    # exception hierarchy in the library (see the TRY002 note in pyproject.toml).
+    with pytest.raises(Exception):  # noqa: B017
         client.get_dataset(dataset=dataset, page_size=10**10)
 
 
 # Query yesterday rather than today so the daily peak report always has settled
 # data. Requesting the current date fails when the market day has not produced any
 # intervals yet (the API returns "max() iterable argument is empty").
-yesterday = datetime.now() - timedelta(days=1)
+# Local, not UTC: this feeds market_date, which the client reduces to a calendar
+# date, and the market day tracks the local date rather than a UTC instant.
+yesterday = datetime.now() - timedelta(days=1)  # noqa: DTZ005
 
 
 @pytest.mark.parametrize(
@@ -932,7 +932,9 @@ yesterday = datetime.now() - timedelta(days=1)
     [
         ("ERCOT", yesterday, yesterday.strftime("%Y-%m-%d")),
         ("CAISO", "2024-07-01", "2024-07-01"),
-        ("spp", datetime(2024, 7, 10), "2024-07-10"),
+        # Naive by design: market_date is a calendar date, so a tzinfo would be
+        # discarded by the client's strftime anyway.
+        ("spp", datetime(2024, 7, 10), "2024-07-10"),  # noqa: DTZ001
     ],
 )
 def test_reports_api(client, return_format, iso, market_date, expected_date):
@@ -945,7 +947,9 @@ def test_reports_api(client, return_format, iso, market_date, expected_date):
 
 def test_invalid_resampling_frequency(client, return_format):
     """Test that invalid resampling frequency raises error."""
-    with pytest.raises(Exception):
+    # The client raises bare Exception for API errors; narrowing this needs a custom
+    # exception hierarchy in the library (see the TRY002 note in pyproject.toml).
+    with pytest.raises(Exception):  # noqa: B017
         client.get_dataset(
             "pjm_load",
             resample="1 hour market",

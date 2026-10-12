@@ -21,8 +21,10 @@ repos:
     rev: v0.10.1
     hooks:
       - id: validate-pyproject
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.5.0
+  # This rev must match the exact ruff pin in pyproject.toml, which is what CI's
+  # `make lint` resolves through uv.lock.
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.0
     hooks:
       - id: ruff
         types_or: [ python, jupyter ]

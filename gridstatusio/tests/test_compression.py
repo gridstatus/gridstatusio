@@ -24,9 +24,9 @@ def test_brotli_decoder_is_installed() -> None:
         importlib.util.find_spec("brotli") is not None
         or importlib.util.find_spec("brotlicffi") is not None
     )
-    assert (
-        has_brotli_decoder
-    ), "a brotli decoder (brotli or brotlicffi) must be installed"
+    assert has_brotli_decoder, (
+        "a brotli decoder (brotli or brotlicffi) must be installed"
+    )
 
 
 def test_default_accept_encoding_advertises_brotli() -> None:
