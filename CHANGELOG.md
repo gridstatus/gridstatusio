@@ -1,6 +1,6 @@
 # Changelog
 
-## v.Next
+## 0.16.1 - October 12, 2026
 
 ### Packaging
 

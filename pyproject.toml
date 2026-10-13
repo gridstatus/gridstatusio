@@ -1,6 +1,6 @@
 [project]
 name = "gridstatusio"
-version = "0.16.0"
+version = "0.16.1"
 description = "Python client for the GridStatus.io API: normalized electricity market data (load, fuel mix, LMPs, forecasts) from every North American ISO through a single REST API."
 authors = [{ name = "Max Kanter", email = "kmax12@gmail.com" }]
 requires-python = ">=3.10, <4"
