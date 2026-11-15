@@ -1,5 +1,5 @@
 # Setting up a Development Environment
-* Install Python 3.10 or higher
+* Install Python 3.11 or higher
 * Fork the repository and clone it to your local machine. For a PR, create a new branch in your fork.
 * Install the project dependencies by running:
 
