@@ -3,7 +3,7 @@ name = "gridstatusio"
 version = "0.16.1"
 description = "Python client for the GridStatus.io API: normalized electricity market data (load, fuel mix, LMPs, forecasts) from every North American ISO through a single REST API."
 authors = [{ name = "Max Kanter", email = "kmax12@gmail.com" }]
-requires-python = ">=3.10, <4"
+requires-python = ">=3.11, <4"
 readme = "README.md"
 license.file = "LICENSE"
 maintainers = [{ name = "Max Kanter", email = "kmax12@gmail.com" }]
@@ -41,7 +41,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -85,6 +84,8 @@ all = [
 "Issue Tracker" = "https://github.com/gridstatus/gridstatusio/issues"
 
 [tool.uv]
+# soupsieve releases with security fixes need Python 3.11.5+; resolving the lock for older 3.11 patch releases keeps a vulnerable version.
+environments = ["python_full_version >= '3.11.5'"]
 dev-dependencies = [
     "pytest>=9.1.0",
     "pytest-xdist>=3.8.0",

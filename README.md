@@ -41,7 +41,7 @@ Use the open-source library when you want raw data directly from the ISOs with n
 
 ## Installation
 
-`gridstatusio` supports Python 3.10+. Install with uv or pip.
+`gridstatusio` supports Python 3.11+. Install with uv or pip.
 
 ```bash
 # Standard installation (includes pandas)

@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Dependencies
+
+- Drop support for Python 3.10, which reached end of life in October 2026. The releases of soupsieve and tornado that fix their known vulnerabilities require Python 3.11.
+
 ## 0.16.1 - October 14, 2026
 
 ### Packaging

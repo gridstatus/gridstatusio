@@ -6,7 +6,7 @@ and Python lists of dicts.
 """
 
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any, cast
 
 import pandas as pd
@@ -827,8 +827,8 @@ def test_resample_and_paginated(client, return_format):
     max_dt = get_max(paginated, "interval_end_utc")
 
     if return_format == ReturnFormat.PYTHON:
-        assert min_dt == datetime(2023, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
-        assert max_dt == datetime(2023, 1, 2, 0, 0, 0, tzinfo=timezone.utc)
+        assert min_dt == datetime(2023, 1, 1, 0, 0, 0, tzinfo=UTC)
+        assert max_dt == datetime(2023, 1, 2, 0, 0, 0, tzinfo=UTC)
 
 
 def test_resampling_across_days(client, return_format):
@@ -863,7 +863,7 @@ def test_cursor_pagination_equals_offset_pagination(client, return_format):
 
 def test_publish_time_latest(client, return_format):
     """Test publish_time='latest'."""
-    today = datetime.now(timezone.utc).replace(
+    today = datetime.now(UTC).replace(
         hour=0,
         minute=0,
         second=0,
@@ -1075,7 +1075,7 @@ def test_market_day_data_downsampling(return_format):
         0,
         0,
         0,
-        tzinfo=timezone.utc,
+        tzinfo=UTC,
     )
     assert get_max(data, "interval_end_utc") == datetime(
         2024,
@@ -1084,7 +1084,7 @@ def test_market_day_data_downsampling(return_format):
         0,
         0,
         0,
-        tzinfo=timezone.utc,
+        tzinfo=UTC,
     )
 
     # Check exactly 1 row for each combination
@@ -1118,7 +1118,7 @@ def test_market_day_data_upsampling(return_format):
         0,
         0,
         0,
-        tzinfo=timezone.utc,
+        tzinfo=UTC,
     )
     assert get_max(data, "interval_end_utc") == datetime(
         2024,
@@ -1127,7 +1127,7 @@ def test_market_day_data_upsampling(return_format):
         0,
         0,
         0,
-        tzinfo=timezone.utc,
+        tzinfo=UTC,
     )
 
     # Check exactly 1 row for each combination
@@ -1151,7 +1151,7 @@ def test_publish_time_start_filtering(return_format):
         return_format=return_format,
     )
 
-    publish_time_filter_dt = datetime(2023, 9, 30, 12, 0, 0, tzinfo=timezone.utc)
+    publish_time_filter_dt = datetime(2023, 9, 30, 12, 0, 0, tzinfo=UTC)
 
     # First query without publish_time_start filter
     data = client.get_dataset(
@@ -1177,7 +1177,7 @@ def test_publish_time_start_filtering(return_format):
         0,
         0,
         0,
-        tzinfo=timezone.utc,
+        tzinfo=UTC,
     )
     assert get_max(data_filtered, "interval_start_utc") == datetime(
         2023,
@@ -1186,7 +1186,7 @@ def test_publish_time_start_filtering(return_format):
         23,
         0,
         0,
-        tzinfo=timezone.utc,
+        tzinfo=UTC,
     )
 
 
@@ -1307,7 +1307,7 @@ def test_publish_time_and_resample(return_format):
         return_format=return_format,
     )
 
-    today = datetime.now(timezone.utc).replace(
+    today = datetime.now(UTC).replace(
         hour=0,
         minute=0,
         second=0,
@@ -1406,7 +1406,7 @@ def test_publish_time_end_filtering(return_format):
         return_format=return_format,
     )
 
-    publish_time_filter = datetime(2023, 10, 1, 12, 0, 0, tzinfo=timezone.utc)
+    publish_time_filter = datetime(2023, 10, 1, 12, 0, 0, tzinfo=UTC)
 
     data = client.get_dataset(
         dataset="ercot_load_forecast_by_forecast_zone",
@@ -1432,7 +1432,7 @@ def test_publish_time_end_filtering(return_format):
         0,
         0,
         0,
-        tzinfo=timezone.utc,
+        tzinfo=UTC,
     )
     assert get_max(data_filtered, "interval_start_utc") == datetime(
         2023,
@@ -1441,7 +1441,7 @@ def test_publish_time_end_filtering(return_format):
         23,
         0,
         0,
-        tzinfo=timezone.utc,
+        tzinfo=UTC,
     )
 
 
@@ -1454,8 +1454,8 @@ def test_publish_time_start_and_end_filtering(return_format):
         return_format=return_format,
     )
 
-    publish_time_start_dt = datetime(2023, 10, 1, 0, 0, 0, tzinfo=timezone.utc)
-    publish_time_end_dt = datetime(2023, 10, 1, 12, 0, 0, tzinfo=timezone.utc)
+    publish_time_start_dt = datetime(2023, 10, 1, 0, 0, 0, tzinfo=UTC)
+    publish_time_end_dt = datetime(2023, 10, 1, 12, 0, 0, tzinfo=UTC)
 
     data = client.get_dataset(
         dataset="ercot_load_forecast_by_forecast_zone",
@@ -1484,7 +1484,7 @@ def test_publish_time_start_and_end_filtering(return_format):
         0,
         0,
         0,
-        tzinfo=timezone.utc,
+        tzinfo=UTC,
     )
     assert get_max(data_filtered, "interval_start_utc") == datetime(
         2023,
@@ -1493,7 +1493,7 @@ def test_publish_time_start_and_end_filtering(return_format):
         23,
         0,
         0,
-        tzinfo=timezone.utc,
+        tzinfo=UTC,
     )
 
 
@@ -1509,8 +1509,8 @@ def test_publish_time_start_inclusive_and_end_time_exclusive(return_format):
     # These are actual publish times from the dataset
     publish_time_start_str = "2023-09-30 17:30:03+00:00"
     publish_time_end_str = "2023-10-01 02:30:00+00:00"
-    publish_time_start_dt = datetime(2023, 9, 30, 17, 30, 3, tzinfo=timezone.utc)
-    publish_time_end_dt = datetime(2023, 10, 1, 2, 30, 0, tzinfo=timezone.utc)
+    publish_time_start_dt = datetime(2023, 9, 30, 17, 30, 3, tzinfo=UTC)
+    publish_time_end_dt = datetime(2023, 10, 1, 2, 30, 0, tzinfo=UTC)
 
     data = client.get_dataset(
         dataset="ercot_load_forecast_by_forecast_zone",
@@ -1600,7 +1600,7 @@ def test_handles_no_results_pandas(return_format):
 def test_pagination_no_limit(client, return_format):
     """Test pagination without limit parameter."""
     dataset = "isone_fuel_mix"
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     # test no limit, no page size
     data = client.get_dataset(

@@ -96,8 +96,7 @@ def _parse_metadata_timestamps(metadata: dict[str, Any]) -> DatasetMetadata:
     for key, value in metadata.items():
         if key.endswith("_utc") and isinstance(value, str):
             try:
-                # Python 3.10's fromisoformat does not accept the "Z" suffix
-                metadata[key] = datetime.fromisoformat(value.replace("Z", "+00:00"))
+                metadata[key] = datetime.fromisoformat(value)
             except ValueError:
                 pass
     return cast(DatasetMetadata, metadata)
