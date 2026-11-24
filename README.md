@@ -23,6 +23,7 @@ Available datasets cover load and demand, fuel and generation mix, forecasts, lo
 - [Getting started](#getting-started)
 - [Return formats](#return-formats)
 - [API usage](#checking-your-api-usage)
+- [MCP server for AI assistants](#mcp-server-for-ai-assistants)
 - [More examples](#more-examples)
 
 ## Why the hosted API?
@@ -175,6 +176,22 @@ The client checks PyPI for library updates on import. To disable this (e.g. in r
 ```bash
 export GSIO_SKIP_VERSION_CHECK=true
 ```
+
+## MCP server for AI assistants
+
+Grid Status hosts an [MCP](https://modelcontextprotocol.io) server that gives AI assistants and coding agents, such as Claude, Codex, Cursor, and VS Code, access to the same hosted data this client reads. There's nothing to install and no API key: your client signs in with your Grid Status account and gets the access your plan includes.
+
+```text
+https://api.gridstatus.io/mcp
+```
+
+In Claude Code, for example, add it and then run `/mcp` to sign in:
+
+```bash
+claude mcp add --transport http --scope user gridstatus https://api.gridstatus.io/mcp
+```
+
+Setup steps for each client are in the [MCP server docs](https://docs.gridstatus.io/developers/ai-agents/mcp-server). A common pattern is to explore datasets and draft a query over MCP, then have the agent turn it into a script that uses this client and an API key.
 
 ## More examples
 
